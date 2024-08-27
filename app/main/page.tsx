@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import NextImage from "next/image";
 import * as fabric from "fabric";
 import pageCss from "./page.module.css";
+import { log } from "console";
+import { debounce } from "lodash";
 
 interface viewport {
   height: number;
@@ -48,20 +50,33 @@ function View() {
   const fabricCanvas = useRef<fabric.Canvas | null>(null);
   const canvasEl = useRef<HTMLCanvasElement | null>(null);
   const [images, setImages] = useState<imageInfo[]>([]);
+  const debouncedResize = debounce(handleResize, 200);
+  function handleResize() {
+    if (!fabricCanvas.current) {
+      console.log("not initialize fabric canvas");
+      throw "not initialize fabric canvas";
+    }
+    fabricCanvas.current.setDimensions({ width: calculateCanvasWidth() });
+    fabricCanvas.current.renderAll();
+  }
+  function calculateCanvasWidth() {
+    return backgroundDiv.current?.clientWidth || 1200;
+  }
   useEffect(() => {
     if (!canvasEl.current) {
+      console.log("canvas element not found");
       throw "canvas error";
     }
     const canvas = new fabric.Canvas(canvasEl.current, {
       width: calculateCanvasWidth(),
       backgroundColor: "#f3f4f6",
     });
-    canvas.setZoom(0.6);
+    canvas.setZoom(1);
     canvas.on("mouse:move", (e) => {
       // console.log(e.scenePoint);
     });
 
-    window.addEventListener("resize", resize);
+    window.addEventListener("resize", debouncedResize);
     document.addEventListener("keydown", function (e) {
       if (e.key === "Delete" || e.key === "Backspace") {
         // 获取当前选中的对象列表
@@ -85,18 +100,8 @@ function View() {
     canvas.renderAll();
     return () => {
       canvas.dispose();
-      window.removeEventListener("resize", resize);
+      window.removeEventListener("resize", debouncedResize);
     };
-    function resize() {
-      if (!fabricCanvas.current) {
-        throw "not initialize fabric canvas";
-      }
-      fabricCanvas.current.setDimensions({ width: calculateCanvasWidth() });
-      fabricCanvas.current.renderAll();
-    }
-    function calculateCanvasWidth() {
-      return backgroundDiv.current?.clientWidth || 1200;
-    }
   }, [viewportSize]);
 
   useEffect(() => {
