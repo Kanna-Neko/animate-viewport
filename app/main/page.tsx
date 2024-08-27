@@ -42,7 +42,7 @@ function Header() {
 function View() {
   const [viewportSize, setViewportSize] = useState<viewport>({
     height: 400,
-    width: 1920,
+    width: 1720,
   });
   const backgroundDiv = useRef<HTMLDivElement | null>(null);
   const fabricCanvas = useRef<fabric.Canvas | null>(null);
@@ -56,6 +56,11 @@ function View() {
       width: calculateCanvasWidth(),
       backgroundColor: "#f3f4f6",
     });
+    canvas.setZoom(0.6);
+    canvas.on("mouse:move", (e) => {
+      // console.log(e.scenePoint);
+    });
+
     window.addEventListener("resize", resize);
     document.addEventListener("keydown", function (e) {
       if (e.key === "Delete" || e.key === "Backspace") {
@@ -92,7 +97,20 @@ function View() {
     function calculateCanvasWidth() {
       return backgroundDiv.current?.clientWidth || 1200;
     }
-  }, []);
+  }, [viewportSize]);
+
+  useEffect(() => {
+    const viewportInterface = new fabric.Rect({
+      width: viewportSize.width,
+      height: viewportSize.height,
+      selectable: false,
+      fill: "white",
+      hoverCursor: "default",
+    });
+    fabricCanvas.current?.add(viewportInterface);
+    // center viewport rectangle
+    fabricCanvas.current?.viewportCenterObject(viewportInterface);
+  }, [viewportSize]);
 
   return (
     <div
@@ -107,6 +125,7 @@ function View() {
             e.preventDefault();
             for (let image of e.dataTransfer.files) {
               const imageUrl = URL.createObjectURL(image);
+              const zoom = fabricCanvas.current?.getZoom() || 1;
               const canvasDimension = fabricCanvas.current
                 ?.getElement()
                 .getBoundingClientRect();
@@ -114,25 +133,21 @@ function View() {
                 imageUrl,
                 {},
                 {
-                  left: e.clientX - (canvasDimension?.left || 0),
-                  top: e.clientY - (canvasDimension?.top || 0),
+                  left: (e.clientX - (canvasDimension?.left || 0)) / zoom,
+                  top: (e.clientY - (canvasDimension?.top || 0)) / zoom,
+                  originX: "center",
+                  originY: "center",
                 }
               ).then((img) => {
                 img.scaleToHeight(200);
-                img.setXY(
-                  new fabric.Point(
-                    img.getX() - img.getScaledWidth() / 2,
-                    img.getY() - img.getScaledHeight() / 2
-                  )
-                );
-                setImages((preImages => [
+                setImages((preImages) => [
                   ...preImages,
                   {
                     name: image.name,
                     url: imageUrl,
                     fabricObject: img,
-                  }
-                ]));
+                  },
+                ]);
                 fabricCanvas.current?.add(img);
                 fabricCanvas.current?.renderAll();
               });
