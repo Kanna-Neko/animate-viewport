@@ -1,12 +1,16 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import {
+  createContext,
+  MutableRefObject,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import NextImage from "next/image";
 import * as fabric from "fabric";
 import pageCss from "./page.module.css";
-import { log } from "console";
-import { debounce } from "lodash";
-
 interface viewport {
   height: number;
   width: number;
@@ -17,6 +21,9 @@ interface imageInfo {
   url: string;
   fabricObject: fabric.FabricObject;
 }
+
+const FabricCanvasContext =
+  createContext<MutableRefObject<fabric.Canvas | null> | null>(null);
 
 export default function Page() {
   return (
@@ -41,6 +48,32 @@ function Header() {
   );
 }
 
+function Config({ selectedImage }: { selectedImage: fabric.Image | null }) {
+  const fabricCanvas = useContext(FabricCanvasContext);
+  const handleSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newSize = parseFloat(e.target.value);
+    selectedImage?.scaleToWidth(newSize);
+    fabricCanvas?.current?.renderAll();
+  };
+  return (
+    <div
+      className={pageCss.hide_scrollbar + " border border-dashed p-8 flex-1"}
+    >
+      <div className="font-mono text-xl font-bold text-slate-500">Config</div>
+      <div>
+        <label>width:</label>
+        <input
+          type="range"
+          min="20"
+          max="100"
+          value={selectedImage?.getScaledWidth() || 30}
+          onChange={handleSizeChange}
+        ></input>
+      </div>
+    </div>
+  );
+}
+
 function View() {
   const [viewportSize, setViewportSize] = useState<viewport>({
     height: 400,
@@ -50,15 +83,8 @@ function View() {
   const fabricCanvas = useRef<fabric.Canvas | null>(null);
   const canvasEl = useRef<HTMLCanvasElement | null>(null);
   const [images, setImages] = useState<imageInfo[]>([]);
-  const debouncedResize = debounce(handleResize, 200);
-  function handleResize() {
-    if (!fabricCanvas.current) {
-      console.log("not initialize fabric canvas");
-      throw "not initialize fabric canvas";
-    }
-    fabricCanvas.current.setDimensions({ width: calculateCanvasWidth() });
-    fabricCanvas.current.renderAll();
-  }
+  const [selectedImage, setSelectedImage] = useState<fabric.Image | null>(null);
+
   function calculateCanvasWidth() {
     return backgroundDiv.current?.clientWidth || 1200;
   }
@@ -67,16 +93,27 @@ function View() {
       console.log("canvas element not found");
       throw "canvas error";
     }
+    fabricCanvas.current?.on("selection:created", (e) => {
+      if (e.selected && e.selected[0] instanceof fabric.FabricImage) {
+        setSelectedImage(e.selected[0] as fabric.Image);
+      }
+    });
+    fabricCanvas.current?.on("selection:updated", (e) => {
+      if (e.selected && e.selected[0] instanceof fabric.FabricImage) {
+        setSelectedImage(e.selected[0] as fabric.Image);
+      }
+    });
+    fabricCanvas.current?.on("selection:cleared", () => {
+      setSelectedImage(null);
+    });
+
     const canvas = new fabric.Canvas(canvasEl.current, {
       width: calculateCanvasWidth(),
       backgroundColor: "#f3f4f6",
     });
-    canvas.setZoom(1);
-    canvas.on("mouse:move", (e) => {
-      // console.log(e.scenePoint);
-    });
+    canvas.setZoom(0.6);
 
-    window.addEventListener("resize", debouncedResize);
+    window.addEventListener("resize", handleResize);
     document.addEventListener("keydown", function (e) {
       if (e.key === "Delete" || e.key === "Backspace") {
         // 获取当前选中的对象列表
@@ -100,9 +137,17 @@ function View() {
     canvas.renderAll();
     return () => {
       canvas.dispose();
-      window.removeEventListener("resize", debouncedResize);
+      window.removeEventListener("resize", handleResize);
     };
-  }, [viewportSize]);
+    function handleResize() {
+      if (!fabricCanvas.current) {
+        console.log("not initialize fabric canvas");
+        throw "not initialize fabric canvas";
+      }
+      fabricCanvas.current.setDimensions({ width: calculateCanvasWidth() });
+      fabricCanvas.current.renderAll();
+    }
+  }, []);
 
   useEffect(() => {
     const viewportInterface = new fabric.Rect({
@@ -122,79 +167,73 @@ function View() {
       className="py-8 px-12 flex justify-between gap-8"
       style={{ height: "calc(100vh - 60px)" }}
     >
-      <div className="min-w-96 flex-1 flex flex-col gap-4">
-        <div
-          ref={backgroundDiv}
-          className="flex justify-center overflow-hidden border border-dashed"
-          onDrop={(e) => {
-            e.preventDefault();
-            for (let image of e.dataTransfer.files) {
-              const imageUrl = URL.createObjectURL(image);
-              const zoom = fabricCanvas.current?.getZoom() || 1;
-              const canvasDimension = fabricCanvas.current
-                ?.getElement()
-                .getBoundingClientRect();
-              fabric.FabricImage.fromURL(
-                imageUrl,
-                {},
-                {
-                  left: (e.clientX - (canvasDimension?.left || 0)) / zoom,
-                  top: (e.clientY - (canvasDimension?.top || 0)) / zoom,
-                  originX: "center",
-                  originY: "center",
-                }
-              ).then((img) => {
-                img.scaleToHeight(200);
-                setImages((preImages) => [
-                  ...preImages,
+      <FabricCanvasContext.Provider value={fabricCanvas}>
+        <div className="min-w-96 flex-1 flex flex-col gap-4">
+          <div
+            ref={backgroundDiv}
+            className="flex justify-center overflow-hidden border border-dashed"
+            onDrop={(e) => {
+              e.preventDefault();
+              for (let image of e.dataTransfer.files) {
+                const imageUrl = URL.createObjectURL(image);
+                const zoom = fabricCanvas.current?.getZoom() || 1;
+                const canvasDimension = fabricCanvas.current
+                  ?.getElement()
+                  .getBoundingClientRect();
+                fabric.FabricImage.fromURL(
+                  imageUrl,
+                  {},
                   {
-                    name: image.name,
-                    url: imageUrl,
-                    fabricObject: img,
-                  },
-                ]);
-                fabricCanvas.current?.add(img);
-                fabricCanvas.current?.renderAll();
-              });
-            }
-          }}
-          onDragOver={(e) => {
-            e.preventDefault();
-          }}
-        >
-          <canvas height={400} width={100} ref={canvasEl} />
-        </div>
-        {/* 绘画配置 */}
-        <div
-          className={
-            pageCss.hide_scrollbar + " border border-dashed p-8 flex-1"
-          }
-        >
-          <div className="font-mono text-xl font-bold text-slate-500">
-            Config
+                    left: (e.clientX - (canvasDimension?.left || 0)) / zoom,
+                    top: (e.clientY - (canvasDimension?.top || 0)) / zoom,
+                    originX: "center",
+                    originY: "center",
+                  }
+                ).then((img) => {
+                  img.scaleToHeight(200);
+                  setImages((preImages) => [
+                    ...preImages,
+                    {
+                      name: image.name,
+                      url: imageUrl,
+                      fabricObject: img,
+                    },
+                  ]);
+                  fabricCanvas.current?.add(img);
+                  fabricCanvas.current?.renderAll();
+                });
+              }
+            }}
+            onDragOver={(e) => {
+              e.preventDefault();
+            }}
+          >
+            <canvas height={400} width={100} ref={canvasEl} />
           </div>
+          {/* 绘画配置 */}
+          <Config selectedImage={selectedImage} />
         </div>
-      </div>
-      {/* 文件目录 */}
-      <div
-        className={pageCss.hide_scrollbar + " w-72 border border-dashed p-4"}
-      >
-        <div className="font-mono text-xl font-bold text-slate-500 pb-2">
-          Overview
+        {/* 文件目录 */}
+        <div
+          className={pageCss.hide_scrollbar + " w-72 border border-dashed p-4"}
+        >
+          <div className="font-mono text-xl font-bold text-slate-500 pb-2">
+            Overview
+          </div>
+          <ol className="font-mono text-lg font-medium text-slate-400">
+            {images.map((item, index) => {
+              return (
+                <li
+                  key={item.url}
+                  className="text-sm cursor-pointer pt-2 pb-1 hover:shadow-md hover:border border border-transparent hover:border-gray-200 px-2 rounded-md hover:-translate-y-[1px] duration-150"
+                >
+                  {item.name}
+                </li>
+              );
+            })}
+          </ol>
         </div>
-        <ol className="font-mono text-lg font-medium text-slate-400">
-          {images.map((item, index) => {
-            return (
-              <li
-                key={item.url}
-                className="text-sm cursor-pointer pt-2 pb-1 hover:shadow-md hover:border border border-transparent hover:border-gray-200 px-2 rounded-md hover:-translate-y-[1px] duration-150"
-              >
-                {item.name}
-              </li>
-            );
-          })}
-        </ol>
-      </div>
+      </FabricCanvasContext.Provider>
     </div>
   );
 }
