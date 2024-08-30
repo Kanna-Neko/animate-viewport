@@ -22,8 +22,7 @@ interface imageInfo {
   fabricObject: fabric.FabricObject;
 }
 
-const FabricCanvasContext =
-  createContext<MutableRefObject<fabric.Canvas | null> | null>(null);
+const FabricCanvasContext = createContext<MutableRefObject<fabric.Canvas | null> | null>(null);
 
 export default function Page() {
   return (
@@ -61,14 +60,8 @@ function Config({ selectedImage }: { selectedImage: fabric.Image | null }) {
     >
       <div className="font-mono text-xl font-bold text-slate-500">Config</div>
       <div>
-        <label>width:</label>
-        <input
-          type="range"
-          min="20"
-          max="100"
-          value={selectedImage?.getScaledWidth() || 30}
-          onChange={handleSizeChange}
-        ></input>
+        <label>Change size:</label>
+        <input className="range [--range-shdw:#F5EDED]" type="range" min="30" max="100" value={selectedImage?.getScaledWidth() || 30} onChange={handleSizeChange}></input>
       </div>
     </div>
   );
@@ -93,6 +86,14 @@ function View() {
       console.log("canvas element not found");
       throw "canvas error";
     }
+    const canvas = new fabric.Canvas(canvasEl.current, {
+      width: calculateCanvasWidth(),
+      backgroundColor: "#f3f4f6",
+    });
+    canvas.setZoom(0.6);
+    fabricCanvas.current = canvas;
+
+
     fabricCanvas.current?.on("selection:created", (e) => {
       if (e.selected && e.selected[0] instanceof fabric.FabricImage) {
         setSelectedImage(e.selected[0] as fabric.Image);
@@ -107,11 +108,7 @@ function View() {
       setSelectedImage(null);
     });
 
-    const canvas = new fabric.Canvas(canvasEl.current, {
-      width: calculateCanvasWidth(),
-      backgroundColor: "#f3f4f6",
-    });
-    canvas.setZoom(0.6);
+    
 
     window.addEventListener("resize", handleResize);
     document.addEventListener("keydown", function (e) {
@@ -133,7 +130,6 @@ function View() {
       }
     });
 
-    fabricCanvas.current = canvas;
     canvas.renderAll();
     return () => {
       canvas.dispose();
@@ -226,6 +222,10 @@ function View() {
                 <li
                   key={item.url}
                   className="text-sm cursor-pointer pt-2 pb-1 hover:shadow-md hover:border border border-transparent hover:border-gray-200 px-2 rounded-md hover:-translate-y-[1px] duration-150"
+                  onClick={() => {
+                    fabricCanvas.current?.setActiveObject(item.fabricObject);
+                    fabricCanvas.current?.renderAll();
+                  }}
                 >
                   {item.name}
                 </li>
