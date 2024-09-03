@@ -24,6 +24,7 @@ export default function View() {
   const fabricCanvas = useRef<fabric.Canvas | null>(null);
   const canvasEl = useRef<HTMLCanvasElement | null>(null);
   const [images, setImages] = useState<imageInfo[]>([]);
+  const [reloadConfig, setReloadConfig] = useState<boolean>(false);
   const [selectedImage, setSelectedImage] = useState<fabric.Image | null>(null);
 
   function calculateCanvasWidth() {
@@ -41,7 +42,6 @@ export default function View() {
     canvas.setZoom(0.6);
     fabricCanvas.current = canvas;
 
-
     fabricCanvas.current?.on("selection:created", (e) => {
       if (e.selected && e.selected[0] instanceof fabric.FabricImage) {
         setSelectedImage(e.selected[0] as fabric.Image);
@@ -52,11 +52,15 @@ export default function View() {
         setSelectedImage(e.selected[0] as fabric.Image);
       }
     });
+    fabricCanvas.current?.on('object:modified', (e) => {
+      setReloadConfig(true);
+    });
+    canvas.on("mouse:move", (e) => {
+      // console.log(e.scenePoint)
+    });
     fabricCanvas.current?.on("selection:cleared", () => {
       setSelectedImage(null);
     });
-
-    
 
     window.addEventListener("resize", handleResize);
     document.addEventListener("keydown", function (e) {
@@ -135,6 +139,11 @@ export default function View() {
                   }
                 ).then((img) => {
                   img.scaleToHeight(200);
+                  img.on("scaling", (e) => {
+                    console.log("hello", reloadConfig);
+                    setReloadConfig(true);
+                    console.log(img.scaleX, img.scaleY);
+                  });
                   setImages((preImages) => [
                     ...preImages,
                     {
@@ -155,7 +164,11 @@ export default function View() {
             <canvas height={400} width={100} ref={canvasEl} />
           </div>
           {/* 绘画配置 */}
-          <Config selectedImage={selectedImage} />
+          <Config
+            selectedImage={selectedImage}
+            reload={reloadConfig}
+            setReload={setReloadConfig}
+          />
         </div>
         {/* 文件目录 */}
         <div
