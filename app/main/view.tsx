@@ -52,9 +52,6 @@ export default function View() {
         setSelectedImage(e.selected[0] as fabric.Image);
       }
     });
-    fabricCanvas.current?.on('object:modified', (e) => {
-      setReloadConfig(true);
-    });
     canvas.on("mouse:move", (e) => {
       // console.log(e.scenePoint)
     });
@@ -140,9 +137,7 @@ export default function View() {
                 ).then((img) => {
                   img.scaleToHeight(200);
                   img.on("scaling", (e) => {
-                    console.log("hello", reloadConfig);
-                    setReloadConfig(true);
-                    console.log(img.scaleX, img.scaleY);
+                    setReloadConfig((reloadConfig) => !reloadConfig);
                   });
                   setImages((preImages) => [
                     ...preImages,
