@@ -57,16 +57,9 @@ export default function Config({
       const currentAspectRatio = currentWidth / currentHeight;
       
       let newWidth, newHeight;
-      if (currentAspectRatio > 1) {
-        // 宽度大于高度，以宽度为基准调整大小
-        newWidth = newSize;
-        newHeight = newSize / currentAspectRatio;
-      } else {
-        // 高度大于或等于宽度，以高度为基准调整大小
-        newHeight = newSize;
-        newWidth = newSize * currentAspectRatio;
-      }
-  
+      newWidth = newSize;
+      newHeight = newSize / currentAspectRatio;
+      
       selectedImage.set({
         scaleX: newWidth / selectedImage.width,
         scaleY: newHeight / selectedImage.height,
