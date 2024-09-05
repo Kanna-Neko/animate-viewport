@@ -2,10 +2,10 @@
 import { useState, useRef, useEffect } from "react";
 import Config from "./config";
 import { FabricCanvasContext } from "./page";
-import pageCss from "./page.module.css";
-import * as fabric from "fabric"
+import * as fabric from "fabric";
+import Overview from "./overview";
 
-interface imageInfo {
+export interface objectInfo {
   name: string;
   url: string;
   fabricObject: fabric.FabricObject;
@@ -23,9 +23,10 @@ export default function View() {
   const backgroundDiv = useRef<HTMLDivElement | null>(null);
   const fabricCanvas = useRef<fabric.Canvas | null>(null);
   const canvasEl = useRef<HTMLCanvasElement | null>(null);
-  const [images, setImages] = useState<imageInfo[]>([]);
+  const [objects, setObjects] = useState<objectInfo[]>([]);
   const [reloadConfig, setReloadConfig] = useState<boolean>(false);
-  const [selectedImage, setSelectedImage] = useState<fabric.Image | null>(null);
+  const [selectedObject, setselectedObject] = useState<objectInfo | null>(null);
+  const [viewportInterface, setViewportInterface] = useState<fabric.FabricObject | null>(null);
 
   function calculateCanvasWidth() {
     return backgroundDiv.current?.clientWidth || 1200;
@@ -41,47 +42,29 @@ export default function View() {
     });
     canvas.setZoom(0.6);
     fabricCanvas.current = canvas;
-
-    fabricCanvas.current?.on("selection:created", (e) => {
-      if (e.selected && e.selected[0] instanceof fabric.FabricImage) {
-        setSelectedImage(e.selected[0] as fabric.Image);
-      }
-    });
-    fabricCanvas.current?.on("selection:updated", (e) => {
-      if (e.selected && e.selected[0] instanceof fabric.FabricImage) {
-        setSelectedImage(e.selected[0] as fabric.Image);
-      }
-    });
-    canvas.on("mouse:move", (e) => {
-      // console.log(e.scenePoint)
-    });
-    fabricCanvas.current?.on("selection:cleared", () => {
-      setSelectedImage(null);
-    });
-
     window.addEventListener("resize", handleResize);
     document.addEventListener("keydown", function (e) {
       if (e.key === "Delete" || e.key === "Backspace") {
         // 获取当前选中的对象列表
-        var activeObjects = canvas.getActiveObjects();
+        var activeObjects = fabricCanvas.current?.getActiveObjects();
 
         // 如果有选中的对象，则循环删除
-        if (activeObjects.length) {
+        if (activeObjects?.length) {
           activeObjects.forEach(function (object) {
-            canvas.remove(object);
-            setImages((preImages) =>
-              preImages.filter((img) => img.fabricObject !== object)
+            fabricCanvas.current?.remove(object);
+            setObjects((preObjects) =>
+              preObjects.filter((obj) => obj.fabricObject !== object)
             );
           });
-          canvas.discardActiveObject(); // 清除当前选中状态
-          canvas.renderAll(); // 刷新画布
+          fabricCanvas.current?.discardActiveObject(); // 清除当前选中状态
+          fabricCanvas.current?.renderAll(); // 刷新画布
         }
       }
     });
 
-    canvas.renderAll();
+    fabricCanvas.current.renderAll();
     return () => {
-      canvas.dispose();
+      fabricCanvas.current?.dispose();
       window.removeEventListener("resize", handleResize);
     };
     function handleResize() {
@@ -95,6 +78,43 @@ export default function View() {
   }, []);
 
   useEffect(() => {
+    if (!fabricCanvas.current) return;
+    const disposeSelectionCreated = fabricCanvas.current.on(
+      "selection:created",
+      (e) => {
+        const selected = e.selected[0];
+        for (let obj of objects) {
+          if (obj.fabricObject == selected) {
+            setselectedObject(obj);
+          }
+        }
+      }
+    );
+    const disposeSelectionUpdated = fabricCanvas.current.on(
+      "selection:updated",
+      (e) => {
+        const selected = e.selected[0];
+        for (let obj of objects) {
+          if (obj.fabricObject == selected) {
+            setselectedObject(obj);
+          }
+        }
+      }
+    );
+    const disposeSelectionCleared = fabricCanvas.current.on(
+      "selection:cleared",
+      () => {
+        setselectedObject(null);
+      }
+    );
+    return () => {
+      disposeSelectionCleared();
+      disposeSelectionCreated();
+      disposeSelectionUpdated();
+    };
+  }, [objects]);
+
+  useEffect(() => {
     const viewportInterface = new fabric.Rect({
       width: viewportSize.width,
       height: viewportSize.height,
@@ -104,6 +124,7 @@ export default function View() {
     });
     fabricCanvas.current?.add(viewportInterface);
     // center viewport rectangle
+    setViewportInterface(viewportInterface);
     fabricCanvas.current?.viewportCenterObject(viewportInterface);
   }, [viewportSize]);
 
@@ -139,8 +160,8 @@ export default function View() {
                   img.on("scaling", (e) => {
                     setReloadConfig((reloadConfig) => !reloadConfig);
                   });
-                  setImages((preImages) => [
-                    ...preImages,
+                  setObjects((preObjects) => [
+                    ...preObjects,
                     {
                       name: image.name,
                       url: imageUrl,
@@ -160,35 +181,18 @@ export default function View() {
           </div>
           {/* 绘画配置 */}
           <Config
-            selectedImage={selectedImage}
+            selectedObject={selectedObject}
             reload={reloadConfig}
             setReload={setReloadConfig}
+            viewportInterface={ viewportInterface}
           />
         </div>
         {/* 文件目录 */}
-        <div
-          className={pageCss.hide_scrollbar + " w-72 border border-dashed p-4"}
-        >
-          <div className="font-mono text-xl font-bold text-slate-500 pb-2">
-            Overview
-          </div>
-          <ol className="font-mono text-sm font-medium text-slate-400">
-            {images.map((item, index) => {
-              return (
-                <li
-                  key={item.url}
-                  className="pt-2 pb-1 px-2 hover:border hover:shadow-md hover:border-gray-200 hover:-translate-y-[1px] border border-transparent rounded-md cursor-pointer duration-150"
-                  onClick={() => {
-                    fabricCanvas.current?.setActiveObject(item.fabricObject);
-                    fabricCanvas.current?.renderAll();
-                  }}
-                >
-                  {item.name}
-                </li>
-              );
-            })}
-          </ol>
-        </div>
+        <Overview
+          objects={objects}
+          setObjects={setObjects}
+          selectedObject={selectedObject}
+        />
       </FabricCanvasContext.Provider>
     </div>
   );
