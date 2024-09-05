@@ -172,12 +172,12 @@ export default function View() {
           <div className="font-mono text-xl font-bold text-slate-500 pb-2">
             Overview
           </div>
-          <ol className="font-mono text-lg font-medium text-slate-400">
+          <ol className="font-mono text-sm font-medium text-slate-400">
             {images.map((item, index) => {
               return (
                 <li
                   key={item.url}
-                  className="text-sm cursor-pointer pt-2 pb-1 hover:shadow-md hover:border border border-transparent hover:border-gray-200 px-2 rounded-md hover:-translate-y-[1px] duration-150"
+                  className="pt-2 pb-1 px-2 hover:border hover:shadow-md hover:border-gray-200 hover:-translate-y-[1px] border border-transparent rounded-md cursor-pointer duration-150"
                   onClick={() => {
                     fabricCanvas.current?.setActiveObject(item.fabricObject);
                     fabricCanvas.current?.renderAll();
