@@ -19,6 +19,7 @@ export default function Canvas({
   setViewportSize,
   viewportInterface,
   setViewportInterface,
+  state,
 }: {
   setReloadConfig: Dispatch<SetStateAction<boolean>>;
   setObjects: Dispatch<SetStateAction<objectInfo[]>>;
@@ -38,7 +39,9 @@ export default function Canvas({
       fabric.ObjectEvents
     > | null>
   >;
+  state: string;
 }) {
+  console.log(objects);
   const backgroundDiv = useRef<HTMLDivElement | null>(null);
   const canvasEl = useRef<HTMLCanvasElement | null>(null);
   const fabricCanvas = useContext(FabricCanvasContext);
@@ -98,6 +101,40 @@ export default function Canvas({
       return backgroundDiv.current?.clientWidth || 1200;
     }
   }, [fabricCanvas, setObjects]);
+  useEffect(() => {
+    if (state == "left") {
+      for (let obj of objects) {
+        obj.fabricObject.set({
+          left: obj.left.x + (viewportInterface?.getX() || 0),
+          top: obj.left.y + (viewportInterface?.getY() || 0),
+          scaleX: obj.left.width / obj.fabricObject.width,
+          scaleY: obj.left.height / obj.fabricObject.height,
+        });
+        obj.fabricObject.setCoords();
+      }
+    } else if (state == "right") {
+      for (let obj of objects) {
+        obj.fabricObject.set({
+          left: obj.right.x + (viewportInterface?.getX() || 0),
+          top: obj.right.y + (viewportInterface?.getY() || 0),
+          scaleX: obj.right.width / obj.fabricObject.width,
+          scaleY: obj.right.height / obj.fabricObject.height,
+        });
+        obj.fabricObject.setCoords();
+      }
+    } else {
+      for (let obj of objects) {
+        obj.fabricObject.set({
+          left: obj.default.x + (viewportInterface?.getX() || 0),
+          top: obj.default.y + (viewportInterface?.getY() || 0),
+          scaleX: obj.default.width / obj.fabricObject.width,
+          scaleY: obj.default.height / obj.fabricObject.height,
+        });
+        obj.fabricObject.setCoords();
+      }
+    }
+    fabricCanvas?.current?.renderAll();
+  }, [fabricCanvas, objects, state]);
 
   useEffect(() => {
     if (!fabricCanvas?.current) return;
@@ -186,23 +223,86 @@ export default function Canvas({
             {
               left: (e.clientX - (canvasDimension?.left || 0)) / zoom,
               top: (e.clientY - (canvasDimension?.top || 0)) / zoom,
-              originX: "center",
-              originY: "center",
             }
           ).then((img) => {
             img.scaleToHeight(200);
             img.on("scaling", (e) => {
               setReloadConfig((reloadConfig) => !reloadConfig);
+              setObjects((preObjects) => {
+                for (let i = 0; i < preObjects.length; i++) {
+                  if (preObjects[i].url == imageUrl) {
+                    const newWidth = img.getScaledWidth();
+                    const newHeight = img.getScaledHeight();
+                    if (preObjects[i].isConfigSame) {
+                      preObjects[i].default.width =
+                        preObjects[i].left.width =
+                        preObjects[i].right.width =
+                          newWidth;
+                      preObjects[i].default.height =
+                        preObjects[i].left.height =
+                        preObjects[i].right.height =
+                          newHeight;
+                    } else {
+                      if (state == "left") {
+                        preObjects[i].left.width = newWidth;
+                        preObjects[i].left.height = newHeight;
+                      } else if (state == "right") {
+                        preObjects[i].right.width = newWidth;
+                        preObjects[i].right.height = newHeight;
+                      } else {
+                        preObjects[i].default.width = newWidth;
+                        preObjects[i].default.height = newHeight;
+                      }
+                    }
+                  }
+                }
+                return [...preObjects];
+              });
             });
-            img.on("moving", (e) => {
+            img.on("moving", () => {
               setReloadConfig((reloadConfig) => !reloadConfig);
+              setObjects((preObjects) => {
+                return preObjects.map((item) => {
+                  if (item.url == imageUrl) {
+                    const newX = img.getX() - (viewportInterface?.getX() || 0);
+                    const newY = img.getY() - (viewportInterface?.getY() || 0);
+                    if (item.isConfigSame) {
+                      item.left.x = item.right.x = item.default.x = newX;
+                      item.left.y = item.right.y = item.default.y = newY;
+                    } else {
+                      if (state == "left") {
+                        item.left.x = newX;
+                        item.left.y = newY;
+                      } else if (state == "right") {
+                        item.right.x = newX;
+                        item.right.y = newY;
+                      } else {
+                        item.default.x = newX;
+                        item.default.y = newY;
+                      }
+                    }
+                  }
+                  return item;
+                });
+              });
             });
+            const config = {
+              width: img.getScaledWidth(),
+              height: img.getScaledHeight(),
+              x: img.getX() - (viewportInterface?.getX() || 0),
+              y: img.getY() - (viewportInterface?.getY() || 0),
+              rotate: 0,
+            };
             setObjects((preObjects) => [
               ...preObjects,
               {
                 name: image.name,
                 url: imageUrl,
                 fabricObject: img,
+                left: Object.assign({}, config),
+                right: Object.assign({}, config),
+                default: Object.assign({}, config),
+                isConfigSame: true,
               },
             ]);
             fabricCanvas.current?.add(img);

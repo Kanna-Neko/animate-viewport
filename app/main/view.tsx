@@ -5,11 +5,24 @@ import { FabricCanvasContext } from "./page";
 import * as fabric from "fabric";
 import Overview from "./overview";
 import Canvas from "./canvas";
+import StateController from "./stateController";
 
 export interface objectInfo {
   name: string;
   url: string;
   fabricObject: fabric.FabricObject;
+  left: objectConfig;
+  right: objectConfig;
+  default: objectConfig;
+  isConfigSame: boolean;
+}
+
+interface objectConfig {
+  width: number;
+  height: number;
+  x: number;
+  y: number;
+  rotate: number;
 }
 export interface viewport {
   height: number;
@@ -27,6 +40,7 @@ export default function View() {
   const [selectedObject, setselectedObject] = useState<objectInfo | null>(null);
   const [viewportInterface, setViewportInterface] =
     useState<fabric.FabricObject | null>(null);
+  const [state, setState] = useState("default");
 
   return (
     <div
@@ -45,12 +59,16 @@ export default function View() {
             viewportSize={viewportSize}
             setViewportInterface={setViewportInterface}
             setViewportSize={setViewportSize}
+            state={state}
           />
+          <StateController setState={setState} state={state} />
           <Config
             selectedObject={selectedObject}
             reload={reloadConfig}
             setReload={setReloadConfig}
             viewportInterface={viewportInterface}
+            state={state}
+            setObjects={setObjects}
           />
         </div>
         {/* 文件目录 */}

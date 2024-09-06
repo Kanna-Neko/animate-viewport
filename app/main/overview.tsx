@@ -3,6 +3,7 @@ import { Dispatch, SetStateAction, useContext, useRef } from "react";
 import pageCss from "./page.module.css";
 import { FabricCanvasContext } from "./page";
 import { objectInfo } from "./view";
+import React from "react";
 export default function Overview({
   objects,
   setObjects,
@@ -87,9 +88,12 @@ export default function Overview({
       <ol className="font-mono text-sm font-medium text-slate-400">
         {objects.map((item, index) => {
           return (
-            <>
+            <React.Fragment key={`fragment-${item.url}-${index}`}>
               {index == 0 && (
-                <li className="gap-border border border-transparent"></li>
+                <li
+                  key={"li-first"}
+                  className="gap-border border border-transparent"
+                ></li>
               )}
               <li
                 draggable
@@ -113,8 +117,11 @@ export default function Overview({
               >
                 {item.name}
               </li>
-              <li className="gap-border border border-transparent"></li>
-            </>
+              <li
+                key={"li-" + index}
+                className="gap-border border border-transparent"
+              ></li>
+            </React.Fragment>
           );
         })}
       </ol>
