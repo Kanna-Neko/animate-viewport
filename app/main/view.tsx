@@ -57,6 +57,7 @@ export default function View() {
             setselectedObject={setselectedObject}
             viewportInterface={viewportInterface}
             viewportSize={viewportSize}
+            selectedObject={selectedObject}
             setViewportInterface={setViewportInterface}
             setViewportSize={setViewportSize}
             state={state}

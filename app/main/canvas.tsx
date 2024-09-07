@@ -14,6 +14,7 @@ export default function Canvas({
   setReloadConfig,
   setObjects,
   objects,
+  selectedObject,
   setselectedObject,
   viewportSize,
   setViewportSize,
@@ -27,6 +28,7 @@ export default function Canvas({
   setselectedObject: Dispatch<SetStateAction<objectInfo | null>>;
   viewportSize: viewport;
   setViewportSize: Dispatch<SetStateAction<viewport>>;
+  selectedObject: objectInfo | null;
   viewportInterface: fabric.FabricObject<
     Partial<fabric.FabricObjectProps>,
     fabric.SerializedObjectProps,
@@ -41,7 +43,6 @@ export default function Canvas({
   >;
   state: string;
 }) {
-  console.log(objects);
   const backgroundDiv = useRef<HTMLDivElement | null>(null);
   const canvasEl = useRef<HTMLCanvasElement | null>(null);
   const fabricCanvas = useContext(FabricCanvasContext);
@@ -134,7 +135,7 @@ export default function Canvas({
       }
     }
     fabricCanvas?.current?.renderAll();
-  }, [fabricCanvas, objects, state]);
+  }, [fabricCanvas, objects, state, viewportInterface]);
 
   useEffect(() => {
     if (!fabricCanvas?.current) return;
@@ -174,12 +175,116 @@ export default function Canvas({
         setselectedObject(null);
       }
     );
+
+    const disposeObjectMoving = fabricCanvas.current.on(
+      "object:modified",
+      (e) => {
+        console.log(selectedObject);
+        if (!selectedObject) throw "not select object";
+        if (selectedObject.isConfigSame) {
+          setObjects((preObjects) => {
+            return preObjects.map((item) => {
+              if (item.url == selectedObject.url) {
+                item.left.height =
+                  item.right.height =
+                  item.default.height =
+                    selectedObject.fabricObject.getScaledHeight();
+                item.left.width =
+                  item.right.width =
+                  item.default.width =
+                    selectedObject.fabricObject.getScaledWidth();
+                item.left.x =
+                  item.right.x =
+                  item.default.x =
+                    selectedObject.fabricObject.getX() -
+                    (viewportInterface?.getX() || 0);
+                item.left.y =
+                  item.right.y =
+                  item.default.y =
+                    selectedObject.fabricObject.getY() -
+                    (viewportInterface?.getY() || 0);
+              }
+              return item;
+            });
+          });
+        } else {
+          if (state == "left") {
+            setObjects((preObjects) => {
+              return preObjects.map((item) => {
+                if (item.url == selectedObject.url) {
+                  item.left.height =
+                    selectedObject.fabricObject.getScaledHeight();
+                  item.left.width =
+                    selectedObject.fabricObject.getScaledWidth();
+                  item.left.x =
+                    selectedObject.fabricObject.getX() -
+                    (viewportInterface?.getX() || 0);
+                  selectedObject.fabricObject.getScaledWidth();
+                  item.left.y =
+                    selectedObject.fabricObject.getY() -
+                    (viewportInterface?.getY() || 0);
+                }
+                return item;
+              });
+            });
+          } else if (state == "right") {
+            setObjects((preObjects) => {
+              return preObjects.map((item) => {
+                if (item.url == selectedObject.url) {
+                  item.right.height =
+                    selectedObject.fabricObject.getScaledHeight();
+                  item.right.width =
+                    selectedObject.fabricObject.getScaledWidth();
+                  item.right.x =
+                    selectedObject.fabricObject.getX() -
+                    (viewportInterface?.getX() || 0);
+                  selectedObject.fabricObject.getScaledWidth();
+                  item.right.y =
+                    selectedObject.fabricObject.getY() -
+                    (viewportInterface?.getY() || 0);
+                }
+                return item;
+              });
+            });
+          } else {
+            setObjects((preObjects) => {
+              return preObjects.map((item) => {
+                if (item.url == selectedObject.url) {
+                  item.default.height =
+                    selectedObject.fabricObject.getScaledHeight();
+                  item.default.width =
+                    selectedObject.fabricObject.getScaledWidth();
+                  item.default.x =
+                    selectedObject.fabricObject.getX() -
+                    (viewportInterface?.getX() || 0);
+                  selectedObject.fabricObject.getScaledWidth();
+                  item.default.y =
+                    selectedObject.fabricObject.getY() -
+                    (viewportInterface?.getY() || 0);
+                }
+                return item;
+              });
+            });
+          }
+        }
+      }
+    );
+
     return () => {
+      disposeObjectMoving();
       disposeSelectionCleared();
       disposeSelectionCreated();
       disposeSelectionUpdated();
     };
-  }, [fabricCanvas, objects, setselectedObject]);
+  }, [
+    fabricCanvas,
+    objects,
+    selectedObject,
+    setObjects,
+    setselectedObject,
+    state,
+    viewportInterface,
+  ]);
 
   useEffect(() => {
     if (!fabricCanvas) {
@@ -226,66 +331,6 @@ export default function Canvas({
             }
           ).then((img) => {
             img.scaleToHeight(200);
-            img.on("scaling", (e) => {
-              setReloadConfig((reloadConfig) => !reloadConfig);
-              setObjects((preObjects) => {
-                for (let i = 0; i < preObjects.length; i++) {
-                  if (preObjects[i].url == imageUrl) {
-                    const newWidth = img.getScaledWidth();
-                    const newHeight = img.getScaledHeight();
-                    if (preObjects[i].isConfigSame) {
-                      preObjects[i].default.width =
-                        preObjects[i].left.width =
-                        preObjects[i].right.width =
-                          newWidth;
-                      preObjects[i].default.height =
-                        preObjects[i].left.height =
-                        preObjects[i].right.height =
-                          newHeight;
-                    } else {
-                      if (state == "left") {
-                        preObjects[i].left.width = newWidth;
-                        preObjects[i].left.height = newHeight;
-                      } else if (state == "right") {
-                        preObjects[i].right.width = newWidth;
-                        preObjects[i].right.height = newHeight;
-                      } else {
-                        preObjects[i].default.width = newWidth;
-                        preObjects[i].default.height = newHeight;
-                      }
-                    }
-                  }
-                }
-                return [...preObjects];
-              });
-            });
-            img.on("moving", () => {
-              setReloadConfig((reloadConfig) => !reloadConfig);
-              setObjects((preObjects) => {
-                return preObjects.map((item) => {
-                  if (item.url == imageUrl) {
-                    const newX = img.getX() - (viewportInterface?.getX() || 0);
-                    const newY = img.getY() - (viewportInterface?.getY() || 0);
-                    if (item.isConfigSame) {
-                      item.left.x = item.right.x = item.default.x = newX;
-                      item.left.y = item.right.y = item.default.y = newY;
-                    } else {
-                      if (state == "left") {
-                        item.left.x = newX;
-                        item.left.y = newY;
-                      } else if (state == "right") {
-                        item.right.x = newX;
-                        item.right.y = newY;
-                      } else {
-                        item.default.x = newX;
-                        item.default.y = newY;
-                      }
-                    }
-                  }
-                  return item;
-                });
-              });
-            });
             const config = {
               width: img.getScaledWidth(),
               height: img.getScaledHeight(),
