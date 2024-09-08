@@ -42,7 +42,6 @@ export default function View() {
   const [viewportInterface, setViewportInterface] =
     useState<fabric.FabricObject | null>(null);
   const [state, setState] = useState("default");
-  const dialogRef = useRef<HTMLDialogElement | null>(null);
 
   return (
     <FabricCanvasContext.Provider value={fabricCanvas}>
@@ -81,23 +80,6 @@ export default function View() {
           selectedObject={selectedObject}
         />
       </div>
-      <div
-        className="fixed right-16 bottom-16 btn btn-circle size-16"
-        onClick={() => {
-          dialogRef.current?.showModal();
-        }}
-      >
-        preview
-      </div>
-      <dialog className="modal backdrop-blur-xl" ref={dialogRef}>
-        <div className="modal-box w-11/12 max-w-5xl">
-          <h3 className="font-bold text-lg">Hello!</h3>
-          <p className="py-4">Press ESC key or click outside to close</p>
-        </div>
-        <form method="dialog" className="modal-backdrop">
-          <button>close</button>
-        </form>
-      </dialog>
     </FabricCanvasContext.Provider>
   );
 }

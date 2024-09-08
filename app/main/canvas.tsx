@@ -46,6 +46,8 @@ export default function Canvas({
   const backgroundDiv = useRef<HTMLDivElement | null>(null);
   const canvasEl = useRef<HTMLCanvasElement | null>(null);
   const fabricCanvas = useContext(FabricCanvasContext);
+  const dialogRef = useRef<HTMLDialogElement | null>(null);
+
   useEffect(() => {
     if (!canvasEl.current) {
       console.log("canvas element not found");
@@ -321,7 +323,7 @@ export default function Canvas({
   return (
     <div
       ref={backgroundDiv}
-      className="flex justify-center overflow-hidden border border-dashed"
+      className="relative flex justify-center overflow-hidden border border-dashed"
       onDrop={(e) => {
         e.preventDefault();
         for (let image of e.dataTransfer.files) {
@@ -368,6 +370,20 @@ export default function Canvas({
       }}
     >
       <canvas height={400} width={100} ref={canvasEl} />
+      <div
+        className="absolute right-8 bottom-8 btn btn-circle bg-slate-300 size-16 "
+        onClick={() => {
+          dialogRef.current?.showModal();
+        }}
+      >
+        preview
+      </div>
+      <dialog className="modal backdrop-blur-xl" ref={dialogRef}>
+        <div className="modal-box w-11/12 max-w-full bg-slate-200"></div>
+        <form method="dialog" className="modal-backdrop">
+          <button>close</button>
+        </form>
+      </dialog>
     </div>
   );
 }
