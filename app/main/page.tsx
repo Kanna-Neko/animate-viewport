@@ -1,15 +1,13 @@
 "use client";
 
-import {
-  createContext,
-  MutableRefObject,
-} from "react";
+import { createContext, MutableRefObject, useEffect } from "react";
 import NextImage from "next/image";
 import * as fabric from "fabric";
 import View from "./view";
 
 
 export const FabricCanvasContext = createContext<MutableRefObject<fabric.Canvas | null> | null>(null);
+
 
 export default function Page() {
   return (
