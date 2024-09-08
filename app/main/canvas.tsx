@@ -176,101 +176,109 @@ export default function Canvas({
       }
     );
 
-    const disposeObjectMoving = fabricCanvas.current.on(
-      "object:modified",
-      (e) => {
-        console.log(selectedObject);
-        if (!selectedObject) throw "not select object";
-        if (selectedObject.isConfigSame) {
+    function objectModify() {
+      if (!selectedObject) throw "not select object";
+      if (selectedObject.isConfigSame) {
+        setObjects((preObjects) => {
+          return preObjects.map((item) => {
+            if (item.url == selectedObject.url) {
+              item.left.height =
+                item.right.height =
+                item.default.height =
+                  selectedObject.fabricObject.getScaledHeight();
+              item.left.width =
+                item.right.width =
+                item.default.width =
+                  selectedObject.fabricObject.getScaledWidth();
+              item.left.x =
+                item.right.x =
+                item.default.x =
+                  selectedObject.fabricObject.getX() -
+                  (viewportInterface?.getX() || 0);
+              item.left.y =
+                item.right.y =
+                item.default.y =
+                  selectedObject.fabricObject.getY() -
+                  (viewportInterface?.getY() || 0);
+            }
+            return item;
+          });
+        });
+      } else {
+        if (state == "left") {
           setObjects((preObjects) => {
             return preObjects.map((item) => {
               if (item.url == selectedObject.url) {
                 item.left.height =
-                  item.right.height =
-                  item.default.height =
-                    selectedObject.fabricObject.getScaledHeight();
-                item.left.width =
-                  item.right.width =
-                  item.default.width =
-                    selectedObject.fabricObject.getScaledWidth();
+                  selectedObject.fabricObject.getScaledHeight();
+                item.left.width = selectedObject.fabricObject.getScaledWidth();
                 item.left.x =
-                  item.right.x =
-                  item.default.x =
-                    selectedObject.fabricObject.getX() -
-                    (viewportInterface?.getX() || 0);
+                  selectedObject.fabricObject.getX() -
+                  (viewportInterface?.getX() || 0);
+                selectedObject.fabricObject.getScaledWidth();
                 item.left.y =
-                  item.right.y =
-                  item.default.y =
-                    selectedObject.fabricObject.getY() -
-                    (viewportInterface?.getY() || 0);
+                  selectedObject.fabricObject.getY() -
+                  (viewportInterface?.getY() || 0);
+              }
+              return item;
+            });
+          });
+        } else if (state == "right") {
+          setObjects((preObjects) => {
+            return preObjects.map((item) => {
+              if (item.url == selectedObject.url) {
+                item.right.height =
+                  selectedObject.fabricObject.getScaledHeight();
+                item.right.width = selectedObject.fabricObject.getScaledWidth();
+                item.right.x =
+                  selectedObject.fabricObject.getX() -
+                  (viewportInterface?.getX() || 0);
+                selectedObject.fabricObject.getScaledWidth();
+                item.right.y =
+                  selectedObject.fabricObject.getY() -
+                  (viewportInterface?.getY() || 0);
               }
               return item;
             });
           });
         } else {
-          if (state == "left") {
-            setObjects((preObjects) => {
-              return preObjects.map((item) => {
-                if (item.url == selectedObject.url) {
-                  item.left.height =
-                    selectedObject.fabricObject.getScaledHeight();
-                  item.left.width =
-                    selectedObject.fabricObject.getScaledWidth();
-                  item.left.x =
-                    selectedObject.fabricObject.getX() -
-                    (viewportInterface?.getX() || 0);
+          setObjects((preObjects) => {
+            return preObjects.map((item) => {
+              if (item.url == selectedObject.url) {
+                item.default.height =
+                  selectedObject.fabricObject.getScaledHeight();
+                item.default.width =
                   selectedObject.fabricObject.getScaledWidth();
-                  item.left.y =
-                    selectedObject.fabricObject.getY() -
-                    (viewportInterface?.getY() || 0);
-                }
-                return item;
-              });
+                item.default.x =
+                  selectedObject.fabricObject.getX() -
+                  (viewportInterface?.getX() || 0);
+                selectedObject.fabricObject.getScaledWidth();
+                item.default.y =
+                  selectedObject.fabricObject.getY() -
+                  (viewportInterface?.getY() || 0);
+              }
+              return item;
             });
-          } else if (state == "right") {
-            setObjects((preObjects) => {
-              return preObjects.map((item) => {
-                if (item.url == selectedObject.url) {
-                  item.right.height =
-                    selectedObject.fabricObject.getScaledHeight();
-                  item.right.width =
-                    selectedObject.fabricObject.getScaledWidth();
-                  item.right.x =
-                    selectedObject.fabricObject.getX() -
-                    (viewportInterface?.getX() || 0);
-                  selectedObject.fabricObject.getScaledWidth();
-                  item.right.y =
-                    selectedObject.fabricObject.getY() -
-                    (viewportInterface?.getY() || 0);
-                }
-                return item;
-              });
-            });
-          } else {
-            setObjects((preObjects) => {
-              return preObjects.map((item) => {
-                if (item.url == selectedObject.url) {
-                  item.default.height =
-                    selectedObject.fabricObject.getScaledHeight();
-                  item.default.width =
-                    selectedObject.fabricObject.getScaledWidth();
-                  item.default.x =
-                    selectedObject.fabricObject.getX() -
-                    (viewportInterface?.getX() || 0);
-                  selectedObject.fabricObject.getScaledWidth();
-                  item.default.y =
-                    selectedObject.fabricObject.getY() -
-                    (viewportInterface?.getY() || 0);
-                }
-                return item;
-              });
-            });
-          }
+          });
         }
+      }
+    }
+    const disposeObjectScaling = fabricCanvas.current.on(
+      "object:scaling",
+      (e) => {
+        objectModify();
+      }
+    );
+
+    const disposeObjectMoving = fabricCanvas.current.on(
+      "object:moving",
+      (e) => {
+        objectModify();
       }
     );
 
     return () => {
+      disposeObjectScaling();
       disposeObjectMoving();
       disposeSelectionCleared();
       disposeSelectionCreated();
