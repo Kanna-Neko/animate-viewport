@@ -5,6 +5,7 @@ import {
   useContext,
   useEffect,
   useRef,
+  useCallback,
 } from "react";
 import { FabricCanvasContext } from "./page";
 import * as fabric from "fabric";
@@ -47,6 +48,33 @@ export default function Canvas({
   const canvasEl = useRef<HTMLCanvasElement | null>(null);
   const fabricCanvas = useContext(FabricCanvasContext);
   const dialogRef = useRef<HTMLDialogElement | null>(null);
+
+  const renderPreview = useCallback(() => {
+    const previewCanvasEl = document.getElementById("previewCanvas") as HTMLCanvasElement;
+  
+    if (!previewCanvasEl) {
+      console.error("Preview canvas element not found");
+      return;
+    }
+  
+    const previewCanvas = new fabric.Canvas(previewCanvasEl);
+  
+    objects.forEach((obj) => {
+      fabric.FabricImage.fromURL(obj.url).then((img) => {
+        (img: fabric.Image) => {
+          img.set({
+            left: obj.default.x,
+            top: obj.default.y,
+            scaleX: obj.default.width / img.width,
+            scaleY: obj.default.height / img.height,
+          });
+          previewCanvas.add(img);
+        }
+      });
+    });
+  
+    previewCanvas.renderAll();
+  }, [objects]);
 
   useEffect(() => {
     if (!canvasEl.current) {
@@ -373,13 +401,16 @@ export default function Canvas({
       <div
         className="absolute right-8 bottom-8 btn btn-circle bg-slate-300 size-16 "
         onClick={() => {
+          renderPreview();
           dialogRef.current?.showModal();
         }}
       >
         preview
       </div>
       <dialog className="modal backdrop-blur-xl" ref={dialogRef}>
-        <div className="modal-box w-11/12 max-w-full bg-slate-200"></div>
+        <div className="modal-box w-11/12 max-w-full">
+          <canvas id="previewCanvas" height={400} width={100}></canvas>
+        </div>
         <form method="dialog" className="modal-backdrop">
           <button>close</button>
         </form>
