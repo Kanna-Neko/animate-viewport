@@ -1,10 +1,9 @@
-'use client'
+"use client";
 import { Dispatch, SetStateAction, useContext } from "react";
 import * as fabric from "fabric";
-import { FabricCanvasContext } from "./page";
+import { FabricCanvasContext, objectInfo } from "./page";
 import pageCss from "./page.module.css";
 import { useState, useEffect } from "react";
-import { objectInfo } from "./view";
 
 export default function Config({
   selectedObject,
@@ -89,6 +88,53 @@ export default function Config({
       setReload(!reload);
     }
   };
+
+  const handleRotateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newSize = parseFloat(e.target.value) % 360;
+    if (selectedObject) {
+      selectedObject.fabricObject.rotate(newSize);
+      let { x, y } = selectedObject.fabricObject.translateToOriginPoint(
+        selectedObject.fabricObject.getRelativeCenterPoint(),
+        "left",
+        "top"
+      );
+      x -= viewportInterface?.getX() || 0;
+      y -= viewportInterface?.getY() || 0;
+
+      setObjects((preObjects) => {
+        return preObjects.map((item) => {
+          if (item.url == selectedObject.url) {
+            if (item.isConfigSame) {
+              item.default.rotate =
+                item.left.rotate =
+                item.right.rotate =
+                  newSize;
+              item.default.x = item.left.x = item.right.x = x;
+              item.default.y = item.left.y = item.right.y = y;
+            } else {
+              if (state == "left") {
+                item.left.rotate = newSize;
+                item.left.x = x;
+                item.left.y = y;
+              } else if (state == "right") {
+                item.right.rotate = newSize;
+                item.right.x = x;
+                item.right.y = y;
+              } else {
+                item.default.rotate = newSize;
+                item.default.x = x;
+                item.default.y = y;
+              }
+            }
+          }
+          return item;
+        });
+      });
+      selectedObject.fabricObject.setCoords();
+      fabricCanvas?.current?.renderAll();
+      setReload(!reload);
+    }
+  };
   const handleSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newSize = parseFloat(e.target.value);
     if (selectedObject && aspectRatio !== null) {
@@ -110,13 +156,19 @@ export default function Config({
           if (item.url === selectedObject.url) {
             const updatedObject = { ...item };
             if (updatedObject.isConfigSame) {
-              updatedObject.left.width = updatedObject.right.width = updatedObject.default.width = newWidth;
-              updatedObject.left.height = updatedObject.right.height = updatedObject.default.height = newHeight;
+              updatedObject.left.width =
+                updatedObject.right.width =
+                updatedObject.default.width =
+                  newWidth;
+              updatedObject.left.height =
+                updatedObject.right.height =
+                updatedObject.default.height =
+                  newHeight;
             } else {
-              if (state === 'left') {
+              if (state === "left") {
                 updatedObject.left.width = newWidth;
                 updatedObject.left.height = newHeight;
-              } else if (state === 'right') {
+              } else if (state === "right") {
                 updatedObject.right.width = newWidth;
                 updatedObject.right.height = newHeight;
               } else {
@@ -265,6 +317,26 @@ export default function Config({
                 onChange={handleHeightChange}
               ></input>
             </div>
+
+            <div className="flex gap-[20px] items-center">
+              <label className="w-32 font-mono text-sm font-medium text-slate-400">
+                rotate:
+              </label>
+              <input
+                className="range [--range-shdw:#F5EDED] w-80"
+                type="range"
+                min="0"
+                max="3000"
+                value={
+                  state == "left"
+                    ? selectedObject.left.rotate
+                    : state == "right"
+                    ? selectedObject.right.rotate
+                    : selectedObject.default.rotate
+                }
+                onChange={handleRotateChange}
+              ></input>
+            </div>
             <div className="flex gap-[20px] items-center">
               <label className="w-32 font-mono text-sm font-medium text-slate-400">
                 Size:
@@ -342,7 +414,7 @@ export default function Config({
             </div>
             <div className="flex gap-[20px] items-center">
               <label className="w-32 font-mono text-sm font-medium text-slate-400">
-                left/right same
+                Keep it fixed
               </label>
               <input
                 type="checkbox"

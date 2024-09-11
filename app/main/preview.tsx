@@ -1,7 +1,7 @@
-import { useRef, useEffect, useContext, useState } from "react";
-import { FabricCanvasContext } from "./page";
+import { useRef, useEffect, useState } from "react";
 import * as fabric from "fabric";
-import { objectInfo, viewport } from "./view";
+import { viewport } from "./view";
+import { objectInfo } from "./page";
 const imposibleX = -1000;
 
 interface PreviewObjectInfo extends objectInfo {

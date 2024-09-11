@@ -2,7 +2,7 @@
 import { Dispatch, SetStateAction, useContext, useRef } from "react";
 import pageCss from "./page.module.css";
 import { FabricCanvasContext } from "./page";
-import { objectInfo } from "./view";
+import { objectInfo } from "./page";
 import React from "react";
 export default function Overview({
   objects,

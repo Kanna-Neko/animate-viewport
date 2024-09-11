@@ -5,12 +5,11 @@ import {
   useContext,
   useEffect,
   useRef,
-  useCallback,
   useDeferredValue,
 } from "react";
-import { FabricCanvasContext } from "./page";
+import { FabricCanvasContext, objectInfo } from "./page";
 import * as fabric from "fabric";
-import { objectInfo, viewport } from "./view";
+import { viewport } from "./view";
 import Preview from "./preview";
 
 export default function Canvas({
@@ -59,6 +58,7 @@ export default function Canvas({
     const canvas = new fabric.Canvas(canvasEl.current, {
       width: calculateCanvasWidth(),
       backgroundColor: "#f3f4f6",
+      centeredRotation: true,
     });
     canvas.setZoom(0.6);
     if (!fabricCanvas) {
@@ -115,6 +115,7 @@ export default function Canvas({
           top: obj.left.y + (viewportInterface?.getY() || 0),
           scaleX: obj.left.width / obj.fabricObject.width,
           scaleY: obj.left.height / obj.fabricObject.height,
+          angle: obj.left.rotate,
         });
         obj.fabricObject.setCoords();
       }
@@ -125,6 +126,7 @@ export default function Canvas({
           top: obj.right.y + (viewportInterface?.getY() || 0),
           scaleX: obj.right.width / obj.fabricObject.width,
           scaleY: obj.right.height / obj.fabricObject.height,
+          angle: obj.right.rotate,
         });
         obj.fabricObject.setCoords();
       }
@@ -135,6 +137,7 @@ export default function Canvas({
           top: obj.default.y + (viewportInterface?.getY() || 0),
           scaleX: obj.default.width / obj.fabricObject.width,
           scaleY: obj.default.height / obj.fabricObject.height,
+          angle: obj.default.rotate,
         });
         obj.fabricObject.setCoords();
       }
@@ -187,14 +190,18 @@ export default function Canvas({
         setObjects((preObjects) => {
           return preObjects.map((item) => {
             if (item.url == selectedObject.url) {
-              item.left.height =
-                item.right.height =
-                item.default.height =
-                  selectedObject.fabricObject.getScaledHeight();
               item.left.width =
                 item.right.width =
                 item.default.width =
                   selectedObject.fabricObject.getScaledWidth();
+              item.left.height =
+                item.right.height =
+                item.default.height =
+                  selectedObject.fabricObject.getScaledHeight();
+              item.left.rotate =
+                item.right.rotate =
+                item.default.rotate =
+                  selectedObject.fabricObject.angle;
               item.left.x =
                 item.right.x =
                 item.default.x =
@@ -214,9 +221,10 @@ export default function Canvas({
           setObjects((preObjects) => {
             return preObjects.map((item) => {
               if (item.url == selectedObject.url) {
+                item.left.width = selectedObject.fabricObject.getScaledWidth();
                 item.left.height =
                   selectedObject.fabricObject.getScaledHeight();
-                item.left.width = selectedObject.fabricObject.getScaledWidth();
+                item.left.rotate = selectedObject.fabricObject.angle;
                 item.left.x =
                   selectedObject.fabricObject.getX() -
                   (viewportInterface?.getX() || 0);
@@ -232,9 +240,10 @@ export default function Canvas({
           setObjects((preObjects) => {
             return preObjects.map((item) => {
               if (item.url == selectedObject.url) {
+                item.right.width = selectedObject.fabricObject.getScaledWidth();
                 item.right.height =
                   selectedObject.fabricObject.getScaledHeight();
-                item.right.width = selectedObject.fabricObject.getScaledWidth();
+                item.right.rotate = selectedObject.fabricObject.angle;
                 item.right.x =
                   selectedObject.fabricObject.getX() -
                   (viewportInterface?.getX() || 0);
@@ -250,10 +259,11 @@ export default function Canvas({
           setObjects((preObjects) => {
             return preObjects.map((item) => {
               if (item.url == selectedObject.url) {
-                item.default.height =
-                  selectedObject.fabricObject.getScaledHeight();
                 item.default.width =
                   selectedObject.fabricObject.getScaledWidth();
+                item.default.height =
+                  selectedObject.fabricObject.getScaledHeight();
+                item.default.rotate = selectedObject.fabricObject.angle;
                 item.default.x =
                   selectedObject.fabricObject.getX() -
                   (viewportInterface?.getX() || 0);
@@ -341,6 +351,7 @@ export default function Canvas({
             {
               left: (e.clientX - (canvasDimension?.left || 0)) / zoom,
               top: (e.clientY - (canvasDimension?.top || 0)) / zoom,
+              centeredRotation: true,
             }
           ).then((img) => {
             img.scaleToHeight(200);

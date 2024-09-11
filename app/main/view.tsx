@@ -1,42 +1,31 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, Dispatch, SetStateAction } from "react";
 import Config from "./config";
-import { FabricCanvasContext } from "./page";
+import { FabricCanvasContext, objectInfo } from "./page";
 import * as fabric from "fabric";
 import Overview from "./overview";
 import Canvas from "./canvas";
 import StateController from "./stateController";
-import pageCss from "./page.module.css";
 
-export interface objectInfo {
-  name: string;
-  url: string;
-  fabricObject: fabric.FabricObject;
-  left: objectConfig;
-  right: objectConfig;
-  default: objectConfig;
-  isConfigSame: boolean;
-}
 
-interface objectConfig {
-  width: number;
-  height: number;
-  x: number;
-  y: number;
-  rotate: number;
-}
+
 export interface viewport {
   height: number;
   width: number;
 }
 
-export default function View() {
+export default function View({
+  objects,
+  setObjects,
+}: {
+  setObjects: Dispatch<SetStateAction<objectInfo[]>>;
+  objects: objectInfo[];
+}) {
   const [viewportSize, setViewportSize] = useState<viewport>({
     height: 400,
     width: 1720,
   });
   const fabricCanvas = useRef<fabric.Canvas | null>(null);
-  const [objects, setObjects] = useState<objectInfo[]>([]);
   const [reloadConfig, setReloadConfig] = useState<boolean>(false);
   const [selectedObject, setselectedObject] = useState<objectInfo | null>(null);
   const [viewportInterface, setViewportInterface] =
