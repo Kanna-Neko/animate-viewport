@@ -133,9 +133,6 @@ export default function Preview({
           Promise.all(promiseArr).then((arr) => {
             setPreviewObjects(arr);
           });
-          return () => {
-            newPreviewCanvas.dispose();
-          };
         }}
       >
         preview
@@ -150,7 +147,14 @@ export default function Preview({
           ></canvas>
         </div>
         <form method="dialog" className="modal-backdrop">
-          <button>close</button>
+          <button
+            onClick={() => {
+              dialogRef.current?.close();
+              previewCanvas?.dispose();
+            }}
+          >
+            close
+          </button>
         </form>
       </dialog>
     </div>
