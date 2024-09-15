@@ -386,7 +386,6 @@ export default function Canvas({
       }}
     >
       <canvas height={400} width={1200} ref={canvasEl} />
-      <Preview viewportSize={viewportSize} objects={lazyObjects} />
     </div>
   );
 }

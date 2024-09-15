@@ -3,9 +3,9 @@
 import { createContext, MutableRefObject, useRef, useState } from "react";
 import NextImage from "next/image";
 import * as fabric from "fabric";
-import View from "./view";
-import "react-toastify/dist/ReactToastify.css";
+import View, { viewport } from "./view";
 import GenerateCode from "./generateCode";
+import Preview from "./preview";
 
 export const FabricCanvasContext =
   createContext<MutableRefObject<fabric.Canvas | null> | null>(null);
@@ -29,15 +29,30 @@ interface objectConfig {
 
 export default function Page() {
   const [objects, setObjects] = useState<objectInfo[]>([]);
+  const [viewportSize, setViewportSize] = useState<viewport>({
+    height: 400,
+    width: 1720,
+  });
   return (
     <div className="h-screen flex flex-col">
-      <Header objects={objects} />
-      <View objects={objects} setObjects={setObjects} />
+      <Header objects={objects} viewportSize={viewportSize} />
+      <View
+        objects={objects}
+        setObjects={setObjects}
+        viewportSize={viewportSize}
+        setViewportSize={setViewportSize}
+      />
     </div>
   );
 }
 
-function Header({ objects }: { objects: objectInfo[] }) {
+function Header({
+  objects,
+  viewportSize,
+}: {
+  objects: objectInfo[];
+  viewportSize: viewport;
+}) {
   return (
     <div
       className="h-[60px]  border-b border-transparent flex items-center justify-between px-4"
@@ -49,6 +64,7 @@ function Header({ objects }: { objects: objectInfo[] }) {
         <NextImage src="/favicon.ico" alt="icon" width={30} height={30} />
         <p className="font-medium text-xl">viewport</p>
       </div>
+      <Preview objects={objects} viewportSize={viewportSize} />
       <GenerateCode objects={objects} />
     </div>
   );

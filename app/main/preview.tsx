@@ -94,9 +94,9 @@ export default function Preview({
     };
   }, [previewCanvas, previewObjects, viewportSize.width]);
   return (
-    <div>
+    <>
       <div
-        className="absolute right-8 bottom-8 btn btn-circle bg-slate-300 size-16 "
+        className="btn ml-auto mr-4"
         onClick={() => {
           dialogRef.current?.showModal();
           if (!previewCanvasEl.current) {
@@ -157,6 +157,6 @@ export default function Preview({
           </button>
         </form>
       </dialog>
-    </div>
+    </>
   );
 }

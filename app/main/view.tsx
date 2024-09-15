@@ -17,14 +17,14 @@ export interface viewport {
 export default function View({
   objects,
   setObjects,
+  viewportSize,
+  setViewportSize,
 }: {
   setObjects: Dispatch<SetStateAction<objectInfo[]>>;
   objects: objectInfo[];
+  viewportSize: viewport;
+  setViewportSize: Dispatch<SetStateAction<viewport>>;
 }) {
-  const [viewportSize, setViewportSize] = useState<viewport>({
-    height: 400,
-    width: 1720,
-  });
   const fabricCanvas = useRef<fabric.Canvas | null>(null);
   const [reloadConfig, setReloadConfig] = useState<boolean>(false);
   const [selectedObject, setselectedObject] = useState<objectInfo | null>(null);
