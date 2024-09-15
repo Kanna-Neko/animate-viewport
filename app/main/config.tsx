@@ -90,17 +90,9 @@ export default function Config({
   };
 
   const handleRotateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newSize = parseFloat(e.target.value) % 360;
+    const newSize = parseFloat(e.target.value);
     if (selectedObject) {
       selectedObject.fabricObject.rotate(newSize);
-      let { x, y } = selectedObject.fabricObject.translateToOriginPoint(
-        selectedObject.fabricObject.getRelativeCenterPoint(),
-        "left",
-        "top"
-      );
-      x -= viewportInterface?.getX() || 0;
-      y -= viewportInterface?.getY() || 0;
-
       setObjects((preObjects) => {
         return preObjects.map((item) => {
           if (item.url == selectedObject.url) {
@@ -109,21 +101,13 @@ export default function Config({
                 item.left.rotate =
                 item.right.rotate =
                   newSize;
-              item.default.x = item.left.x = item.right.x = x;
-              item.default.y = item.left.y = item.right.y = y;
             } else {
               if (state == "left") {
                 item.left.rotate = newSize;
-                item.left.x = x;
-                item.left.y = y;
               } else if (state == "right") {
                 item.right.rotate = newSize;
-                item.right.x = x;
-                item.right.y = y;
               } else {
                 item.default.rotate = newSize;
-                item.default.x = x;
-                item.default.y = y;
               }
             }
           }
@@ -325,14 +309,26 @@ export default function Config({
               <input
                 className="range [--range-shdw:#F5EDED] w-80"
                 type="range"
-                min="0"
-                max="3000"
+                min="-1080"
+                max="1080"
                 value={
                   state == "left"
                     ? selectedObject.left.rotate
                     : state == "right"
                     ? selectedObject.right.rotate
                     : selectedObject.default.rotate
+                }
+                onChange={handleRotateChange}
+              ></input>
+              <input
+                type="number"
+                className="input input-sm input-bordered w-20"
+                value={
+                  state == "left"
+                    ? selectedObject.left.rotate.toFixed(0)
+                    : state == "right"
+                    ? selectedObject.right.rotate.toFixed(0)
+                    : selectedObject.default.rotate.toFixed(0)
                 }
                 onChange={handleRotateChange}
               ></input>

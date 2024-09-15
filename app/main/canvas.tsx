@@ -352,6 +352,8 @@ export default function Canvas({
               left: (e.clientX - (canvasDimension?.left || 0)) / zoom,
               top: (e.clientY - (canvasDimension?.top || 0)) / zoom,
               centeredRotation: true,
+              originX: "center",
+              originY: "center",
             }
           ).then((img) => {
             img.scaleToHeight(200);
