@@ -17,6 +17,7 @@ export interface objectInfo {
   left: objectConfig;
   right: objectConfig;
   default: objectConfig;
+  type: string;
   isConfigSame: boolean;
 }
 interface objectConfig {

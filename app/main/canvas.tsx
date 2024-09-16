@@ -373,6 +373,7 @@ export default function Canvas({
                 left: Object.assign({}, config),
                 right: Object.assign({}, config),
                 default: Object.assign({}, config),
+                type: image.type,
                 isConfigSame: true,
               },
             ]);
