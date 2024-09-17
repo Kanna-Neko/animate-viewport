@@ -345,41 +345,94 @@ export default function Canvas({
           const canvasDimension = fabricCanvas.current
             ?.getElement()
             .getBoundingClientRect();
-          fabric.FabricImage.fromURL(
-            imageUrl,
-            {},
-            {
-              left: (e.clientX - (canvasDimension?.left || 0)) / zoom,
-              top: (e.clientY - (canvasDimension?.top || 0)) / zoom,
-              centeredRotation: true,
-              originX: "center",
-              originY: "center",
+            if (image.type == "video/mp4") {
+              const video = document.createElement("video", {});
+              video.src = imageUrl;
+              video.muted = true;
+              video.loop = true;
+              video.onloadedmetadata = () => {
+                console.log("hello");
+                video.width = video.videoWidth;
+                video.height = video.videoHeight;
+              };
+              video.onloadeddata = () => {
+                video.play().then(() => {
+                  const fabricElemenet = new fabric.FabricImage(video, {
+                    height: video.videoHeight,
+                    width: video.videoWidth,
+                    left: (e.clientX - (canvasDimension?.left || 0)) / zoom,
+                    top: (e.clientY - (canvasDimension?.top || 0)) / zoom,
+                    centeredRotation: true,
+                    originX: "center",
+                    originY: "center",
+                  });
+                  fabricElemenet.scaleToHeight(200);
+                  const config = {
+                    width: fabricElemenet.getScaledWidth(),
+                    height: fabricElemenet.getScaledHeight(),
+                    x: fabricElemenet.getX() - (viewportInterface?.getX() || 0),
+                    y: fabricElemenet.getY() - (viewportInterface?.getY() || 0),
+                    rotate: 0,
+                  };
+                  setObjects((preObjects) => [
+                    ...preObjects,
+                    {
+                      name: image.name,
+                      url: imageUrl,
+                      fabricObject: fabricElemenet,
+                      left: Object.assign({}, config),
+                      right: Object.assign({}, config),
+                      default: Object.assign({}, config),
+                      type: image.type,
+                      isConfigSame: true,
+                    },
+                  ]);
+                  fabricCanvas.current?.add(fabricElemenet);
+                  fabricCanvas.current?.renderAll();
+                  fabric.util.requestAnimFrame(function render() {
+                    fabricElemenet.setElement(video);
+                    fabricCanvas.current?.renderAll();
+                    fabric.util.requestAnimFrame(render);
+                  });
+                });
+              };
+            } else {
+              fabric.FabricImage.fromURL(
+                imageUrl,
+                {},
+                {
+                  left: (e.clientX - (canvasDimension?.left || 0)) / zoom,
+                  top: (e.clientY - (canvasDimension?.top || 0)) / zoom,
+                  centeredRotation: true,
+                  originX: "center",
+                  originY: "center",
+                }
+              ).then((img) => {
+                img.scaleToHeight(200);
+                const config = {
+                  width: img.getScaledWidth(),
+                  height: img.getScaledHeight(),
+                  x: img.getX() - (viewportInterface?.getX() || 0),
+                  y: img.getY() - (viewportInterface?.getY() || 0),
+                  rotate: 0,
+                };
+                setObjects((preObjects) => [
+                  ...preObjects,
+                  {
+                    name: image.name,
+                    url: imageUrl,
+                    fabricObject: img,
+                    left: Object.assign({}, config),
+                    right: Object.assign({}, config),
+                    default: Object.assign({}, config),
+                    type: image.type,
+                    isConfigSame: true,
+                  },
+                ]);
+                fabricCanvas.current?.add(img);
+                fabricCanvas.current?.renderAll();
+              });
             }
-          ).then((img) => {
-            img.scaleToHeight(200);
-            const config = {
-              width: img.getScaledWidth(),
-              height: img.getScaledHeight(),
-              x: img.getX() - (viewportInterface?.getX() || 0),
-              y: img.getY() - (viewportInterface?.getY() || 0),
-              rotate: 0,
-            };
-            setObjects((preObjects) => [
-              ...preObjects,
-              {
-                name: image.name,
-                url: imageUrl,
-                fabricObject: img,
-                left: Object.assign({}, config),
-                right: Object.assign({}, config),
-                default: Object.assign({}, config),
-                type: image.type,
-                isConfigSame: true,
-              },
-            ]);
-            fabricCanvas.current?.add(img);
-            fabricCanvas.current?.renderAll();
-          });
         }
       }}
       onDragOver={(e) => {

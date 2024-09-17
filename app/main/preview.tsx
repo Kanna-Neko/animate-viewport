@@ -131,6 +131,7 @@ export default function Preview({
                     hoverCursor: "default",
                   });
                   newPreviewCanvas.add(img);
+                  console.log(obj.type);
                   if (obj.type == "image/gif") {
                     fetch(obj.url)
                       .then((result) => result.arrayBuffer())
