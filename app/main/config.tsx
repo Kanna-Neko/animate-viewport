@@ -238,7 +238,7 @@ export default function Config({
           <div className="font-mono text-xl font-bold text-slate-500 pb-2">
             Config
           </div>
-          <div className="mx-4 flex flex-col gap-2">
+          <div className="mx-4 grid grid-cols-2 justify-center gap-2 gap-y-4">
             <div className="flex gap-[20px] items-center">
               <label className="w-32 font-mono text-sm font-medium text-slate-400">
                 Width(Only):
