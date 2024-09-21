@@ -115,85 +115,126 @@ export default function Preview({
 
           const promiseArr: Promise<PreviewObjectInfo>[] = [];
           objects.forEach((obj) => {
-            promiseArr.push(
-              new Promise((resolve) => {
-                fabric.FabricImage.fromURL(obj.url).then((img) => {
-                  img.set({
-                    left: obj.default.x,
-                    top: obj.default.y,
-                    scaleX: obj.default.width / img.width,
-                    scaleY: obj.default.height / img.height,
-                    angle: obj.default.rotate,
-                    originX: "center",
-                    originY: "center",
-                    selectable: false, // 使对象不可选
-                    evented: false, // 使对象不响应任何事件
-                    hoverCursor: "default",
-                  });
-                  newPreviewCanvas.add(img);
-                  if (obj.type == "image/gif") {
-                    fetch(obj.url)
-                      .then((result) => result.arrayBuffer())
-                      .then((arrayBuffer) => {
-                        const decoder = new ImageDecoder({
-                          type: "image/gif",
-                          data: arrayBuffer,
-                        });
-                        decoder.tracks.ready.then(() => {
-                          const frameCount =
-                            decoder.tracks.selectedTrack?.frameCount || 1;
-                          const gifCanvasList = new Array<HTMLCanvasElement>(
-                            frameCount
-                          );
-                          const promiseArr: Promise<void>[] = [];
-                          for (let i = 0; i < frameCount; i++) {
-                            promiseArr.push(
-                              decoder
-                                .decode({
-                                  frameIndex: i,
-                                })
-                                .then((res) => {
-                                  const newCanvas =
-                                    fabric.util.createCanvasElement();
-                                  newCanvas.width = img.width;
-                                  newCanvas.height = img.height;
-                                  const newCanvasContext =
-                                    newCanvas.getContext("2d");
-                                  if (!newCanvasContext) {
-                                    throw "new canvas context error";
-                                  }
-                                  newCanvasContext.drawImage(res.image, 0, 0);
-                                  gifCanvasList[i] = newCanvas;
-                                })
+            if (obj.type == "video/mp4") {
+              promiseArr.push(
+                new Promise((resolve) => {
+                  const video = document.createElement("video", {});
+                  video.src = obj.url;
+                  video.muted = true;
+                  video.loop = true;
+                  video.onloadedmetadata = () => {
+                    video.width = video.videoWidth;
+                    video.height = video.videoHeight;
+                  };
+                  video.onloadeddata = () => {
+                    video.play().then(() => {
+                      const fabricElement = new fabric.FabricImage(video, {
+                        left: obj.default.x,
+                        top: obj.default.y,
+                        scaleX: obj.default.width / video.width,
+                        scaleY: obj.default.height / video.height,
+                        angle: obj.default.rotate,
+                        originX: "center",
+                        originY: "center",
+                        selectable: false, // 使对象不可选
+                        evented: false, // 使对象不响应任何事件
+                        hoverCursor: "default",
+                      });
+                      newPreviewCanvas.add(fabricElement);
+                      fabric.util.requestAnimFrame(function render() {
+                        fabricElement.setElement(video);
+                        newPreviewCanvas.renderAll();
+                        fabric.util.requestAnimFrame(render);
+                      });
+                      resolve({
+                        ...obj,
+                        previewObject: fabricElement,
+                      });
+                    });
+                  };
+                })
+              );
+            } else {
+              promiseArr.push(
+                new Promise((resolve) => {
+                  fabric.FabricImage.fromURL(obj.url).then((img) => {
+                    img.set({
+                      left: obj.default.x,
+                      top: obj.default.y,
+                      scaleX: obj.default.width / img.width,
+                      scaleY: obj.default.height / img.height,
+                      angle: obj.default.rotate,
+                      originX: "center",
+                      originY: "center",
+                      selectable: false, // 使对象不可选
+                      evented: false, // 使对象不响应任何事件
+                      hoverCursor: "default",
+                    });
+                    newPreviewCanvas.add(img);
+                    if (obj.type == "image/gif") {
+                      fetch(obj.url)
+                        .then((result) => result.arrayBuffer())
+                        .then((arrayBuffer) => {
+                          const decoder = new ImageDecoder({
+                            type: "image/gif",
+                            data: arrayBuffer,
+                          });
+                          decoder.tracks.ready.then(() => {
+                            const frameCount =
+                              decoder.tracks.selectedTrack?.frameCount || 1;
+                            const gifCanvasList = new Array<HTMLCanvasElement>(
+                              frameCount
                             );
-                          }
-                          const animateGif = (frame: number) => {
-                            return (_: number) => {
-                              img.setElement(gifCanvasList[frame]);
-                              newPreviewCanvas.renderAll();
-                              let nextFrame = frame + 1;
-                              if (nextFrame >= frameCount) {
-                                nextFrame = 0;
-                              }
-                              fabric.util.requestAnimFrame(
-                                animateGif(nextFrame)
+                            const promiseArr: Promise<void>[] = [];
+                            for (let i = 0; i < frameCount; i++) {
+                              promiseArr.push(
+                                decoder
+                                  .decode({
+                                    frameIndex: i,
+                                  })
+                                  .then((res) => {
+                                    const newCanvas =
+                                      fabric.util.createCanvasElement();
+                                    newCanvas.width = img.width;
+                                    newCanvas.height = img.height;
+                                    const newCanvasContext =
+                                      newCanvas.getContext("2d");
+                                    if (!newCanvasContext) {
+                                      throw "new canvas context error";
+                                    }
+                                    newCanvasContext.drawImage(res.image, 0, 0);
+                                    gifCanvasList[i] = newCanvas;
+                                  })
                               );
+                            }
+                            const animateGif = (frame: number) => {
+                              return (_: number) => {
+                                img.setElement(gifCanvasList[frame]);
+                                newPreviewCanvas.renderAll();
+                                let nextFrame = frame + 1;
+                                if (nextFrame >= frameCount) {
+                                  nextFrame = 0;
+                                }
+                                fabric.util.requestAnimFrame(
+                                  animateGif(nextFrame)
+                                );
+                              };
                             };
-                          };
-                          Promise.all(promiseArr).then(() => {
-                            fabric.util.requestAnimFrame(animateGif(0));
+                            Promise.all(promiseArr).then(() => {
+                              fabric.util.requestAnimFrame(animateGif(0));
+                            });
                           });
                         });
-                      });
-                  }
-                  newPreviewCanvas.renderAll();
-                  resolve({
-                    ...obj,
-                    previewObject: img,
+                    }
+                    newPreviewCanvas.renderAll();
+                    resolve({
+                      ...obj,
+                      previewObject: img,
+                    });
                   });
-                });
-              })
-            );
+                })
+              );
+            }
           });
           Promise.all(promiseArr).then((arr) => {
             setPreviewObjects(arr);

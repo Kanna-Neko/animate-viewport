@@ -292,9 +292,59 @@ export default function Canvas({
       }
     );
 
+    const disposeObjectRotate = fabricCanvas.current.on(
+      "object:rotating",
+      (e) => {
+        if (!selectedObject) throw "not select object";
+        if (selectedObject.isConfigSame) {
+          setObjects((preObjects) => {
+            return preObjects.map((item) => {
+              if (item.url == selectedObject.url) {
+                item.left.rotate =
+                  item.right.rotate =
+                  item.default.rotate =
+                    selectedObject.fabricObject.angle;
+              }
+              return item;
+            });
+          });
+        } else {
+          if (state == "left") {
+            setObjects((preObjects) => {
+              return preObjects.map((item) => {
+                if (item.url == selectedObject.url) {
+                  item.left.rotate = selectedObject.fabricObject.angle;
+                }
+                return item;
+              });
+            });
+          } else if (state == "right") {
+            setObjects((preObjects) => {
+              return preObjects.map((item) => {
+                if (item.url == selectedObject.url) {
+                  item.right.rotate = selectedObject.fabricObject.angle;
+                }
+                return item;
+              });
+            });
+          } else {
+            setObjects((preObjects) => {
+              return preObjects.map((item) => {
+                if (item.url == selectedObject.url) {
+                  item.default.rotate = selectedObject.fabricObject.angle;
+                }
+                return item;
+              });
+            });
+          }
+        }
+      }
+    );
+
     return () => {
       disposeObjectScaling();
       disposeObjectMoving();
+      disposeObjectRotate();
       disposeSelectionCleared();
       disposeSelectionCreated();
       disposeSelectionUpdated();
@@ -345,94 +395,74 @@ export default function Canvas({
           const canvasDimension = fabricCanvas.current
             ?.getElement()
             .getBoundingClientRect();
-            if (image.type == "video/mp4") {
-              const video = document.createElement("video", {});
-              video.src = imageUrl;
-              video.muted = true;
-              video.loop = true;
-              video.onloadedmetadata = () => {
-                console.log("hello");
-                video.width = video.videoWidth;
-                video.height = video.videoHeight;
-              };
-              video.onloadeddata = () => {
-                video.play().then(() => {
-                  const fabricElemenet = new fabric.FabricImage(video, {
-                    height: video.videoHeight,
-                    width: video.videoWidth,
-                    left: (e.clientX - (canvasDimension?.left || 0)) / zoom,
-                    top: (e.clientY - (canvasDimension?.top || 0)) / zoom,
-                    centeredRotation: true,
-                    originX: "center",
-                    originY: "center",
-                  });
-                  fabricElemenet.scaleToHeight(200);
-                  const config = {
-                    width: fabricElemenet.getScaledWidth(),
-                    height: fabricElemenet.getScaledHeight(),
-                    x: fabricElemenet.getX() - (viewportInterface?.getX() || 0),
-                    y: fabricElemenet.getY() - (viewportInterface?.getY() || 0),
-                    rotate: 0,
-                  };
-                  setObjects((preObjects) => [
-                    ...preObjects,
-                    {
-                      name: image.name,
-                      url: imageUrl,
-                      fabricObject: fabricElemenet,
-                      left: Object.assign({}, config),
-                      right: Object.assign({}, config),
-                      default: Object.assign({}, config),
-                      type: image.type,
-                      isConfigSame: true,
-                    },
-                  ]);
-                  fabricCanvas.current?.add(fabricElemenet);
-                  fabricCanvas.current?.renderAll();
-                  fabric.util.requestAnimFrame(function render() {
-                    fabricElemenet.setElement(video);
-                    fabricCanvas.current?.renderAll();
-                    fabric.util.requestAnimFrame(render);
-                  });
-                });
-              };
-            } else {
-              fabric.FabricImage.fromURL(
-                imageUrl,
-                {},
-                {
+          const addElement = (element: fabric.FabricObject) => {
+            element.scaleToHeight(200);
+            const config = {
+              width: element.getScaledWidth(),
+              height: element.getScaledHeight(),
+              x: element.getX() - (viewportInterface?.getX() || 0),
+              y: element.getY() - (viewportInterface?.getY() || 0),
+              rotate: 0,
+            };
+            setObjects((preObjects) => [
+              ...preObjects,
+              {
+                name: image.name,
+                url: imageUrl,
+                fabricObject: element,
+                left: Object.assign({}, config),
+                right: Object.assign({}, config),
+                default: Object.assign({}, config),
+                type: image.type,
+                isConfigSame: true,
+              },
+            ]);
+            fabricCanvas.current?.add(element);
+            fabricCanvas.current?.renderAll();
+          };
+          if (image.type == "video/mp4") {
+            const video = document.createElement("video", {});
+            video.src = imageUrl;
+            video.muted = true;
+            video.loop = true;
+            video.onloadedmetadata = () => {
+              video.width = video.videoWidth;
+              video.height = video.videoHeight;
+            };
+            video.onloadeddata = () => {
+              video.play().then(() => {
+                const fabricElement = new fabric.FabricImage(video, {
+                  height: video.videoHeight,
+                  width: video.videoWidth,
                   left: (e.clientX - (canvasDimension?.left || 0)) / zoom,
                   top: (e.clientY - (canvasDimension?.top || 0)) / zoom,
                   centeredRotation: true,
                   originX: "center",
                   originY: "center",
-                }
-              ).then((img) => {
-                img.scaleToHeight(200);
-                const config = {
-                  width: img.getScaledWidth(),
-                  height: img.getScaledHeight(),
-                  x: img.getX() - (viewportInterface?.getX() || 0),
-                  y: img.getY() - (viewportInterface?.getY() || 0),
-                  rotate: 0,
-                };
-                setObjects((preObjects) => [
-                  ...preObjects,
-                  {
-                    name: image.name,
-                    url: imageUrl,
-                    fabricObject: img,
-                    left: Object.assign({}, config),
-                    right: Object.assign({}, config),
-                    default: Object.assign({}, config),
-                    type: image.type,
-                    isConfigSame: true,
-                  },
-                ]);
-                fabricCanvas.current?.add(img);
-                fabricCanvas.current?.renderAll();
+                });
+                addElement(fabricElement);
+                fabric.util.requestAnimFrame(function render() {
+                  fabricElement.setElement(video);
+                  fabricCanvas.current?.renderAll();
+                  fabric.util.requestAnimFrame(render);
+                });
               });
-            }
+            };
+          } else {
+            fabric.FabricImage.fromURL(
+              imageUrl,
+              {},
+              {
+                left: (e.clientX - (canvasDimension?.left || 0)) / zoom,
+                top: (e.clientY - (canvasDimension?.top || 0)) / zoom,
+                centeredRotation: true,
+                originX: "center",
+                originY: "center",
+              }
+            ).then((img) => {
+              addElement(img);
+            });
+          }
         }
       }}
       onDragOver={(e) => {
