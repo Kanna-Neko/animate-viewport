@@ -11,6 +11,7 @@ import { FabricCanvasContext, objectInfo } from "./page";
 import * as fabric from "fabric";
 import { viewport } from "./view";
 import Preview from "./preview";
+import { gifAnimate } from "../utils/canvasGif";
 
 export default function Canvas({
   setReloadConfig,
@@ -448,6 +449,27 @@ export default function Canvas({
                 });
               });
             };
+          } else if (image.type == "image/gif") {
+            fabric.FabricImage.fromURL(
+              imageUrl,
+              {},
+              {
+                left: (e.clientX - (canvasDimension?.left || 0)) / zoom,
+                top: (e.clientY - (canvasDimension?.top || 0)) / zoom,
+                centeredRotation: true,
+                originX: "center",
+                originY: "center",
+              }
+            ).then((img) => {
+              addElement(img);
+              image.arrayBuffer().then((res) => {
+                if (fabricCanvas.current)
+                  gifAnimate(res, img, fabricCanvas.current);
+                else {
+                  throw "error: fabricCanvas not found";
+                }
+              });
+            });
           } else {
             fabric.FabricImage.fromURL(
               imageUrl,
