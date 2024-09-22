@@ -5,6 +5,8 @@ import { FabricCanvasContext, objectInfo } from "./page";
 import pageCss from "./page.module.css";
 import { useState, useEffect } from "react";
 
+import { MdDeleteForever } from "react-icons/md";
+
 export default function Config({
   selectedObject,
   setObjects,
@@ -228,6 +230,19 @@ export default function Config({
       });
     }
   };
+  const deleteSelectObject = () => {
+    if (!selectedObject || !fabricCanvas || !fabricCanvas.current) {
+      return;
+    }
+    setObjects((objects) => {
+      return objects.filter((item) => {
+        return item.url != selectedObject.url;
+      });
+    });
+    fabricCanvas.current.discardActiveObject();
+    fabricCanvas.current.remove(selectedObject.fabricObject)
+    fabricCanvas.current.renderAll();
+  };
 
   return (
     <div
@@ -428,6 +443,12 @@ export default function Config({
                 }}
               />
             </div>
+            <button
+              className="btn btn-outline btn-square"
+              onClick={deleteSelectObject}
+            >
+              <MdDeleteForever size={34} />
+            </button>
           </div>
         </div>
       ) : (
