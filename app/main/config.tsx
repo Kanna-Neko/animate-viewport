@@ -448,10 +448,10 @@ export default function Config({
                 Delete it?
               </label>
               <button
-                className="btn btn-square"
+                className="btn btn-sm btn-square"
                 onClick={deleteSelectObject}
               >
-                <MdDeleteForever size={34} />
+                <MdDeleteForever size={25} />
               </button>
             </div>
           </div>

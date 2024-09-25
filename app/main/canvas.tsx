@@ -425,7 +425,7 @@ export default function Canvas({
           if (image.type == "video/mp4") {
             const video = document.createElement("video", {});
             video.src = imageUrl;
-            video.muted = true;
+            video.muted = false;
             video.loop = true;
             video.onloadedmetadata = () => {
               video.width = video.videoWidth;

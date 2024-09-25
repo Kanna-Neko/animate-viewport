@@ -39,7 +39,7 @@ export default function Overview({
   }
   return (
     <div
-      className={pageCss.hide_scrollbar + " w-72 border border-dashed p-4"}
+      className={pageCss.hide_scrollbar + " w-72 border border-dashed p-4 relative"}
       onDragOver={(e) => {
         e.preventDefault();
         if (!dragItem.current) return;
@@ -85,7 +85,7 @@ export default function Overview({
       <div className="font-mono text-xl font-bold text-slate-500 pb-2">
         Overview
       </div>
-      <ol className="font-mono text-sm font-medium text-slate-400">
+      <ol className="w-11/12 absolute left-1/2 -translate-x-1/2 font-mono text-sm font-medium text-slate-400 ">
         {objects.map((item, index) => {
           return (
             <React.Fragment key={`fragment-${item.url}-${index}`}>
@@ -99,7 +99,7 @@ export default function Overview({
                 draggable
                 key={item.url}
                 className={
-                  "pt-2 pb-1 px-2 my-1 hover:border hover:shadow-md hover:border-gray-200 hover:-translate-y-[1px] border border-transparent rounded-md cursor-pointer duration-150" +
+                  "overflow-hidden whitespace-nowrap text-ellipsis pt-2 pb-1 px-2 my-1 hover:border hover:shadow-md hover:border-gray-200 hover:-translate-y-[1px] border border-transparent rounded-md cursor-pointer duration-150" +
                   (selectedObject == item
                     ? "border shadow-md border-gray-200 -translate-y-[1px]"
                     : "")
