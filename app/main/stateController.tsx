@@ -1,4 +1,5 @@
 import { Dispatch, SetStateAction } from "react";
+import AnimateViewPort from "animate-viewport";
 
 export default function StateController({
   state,

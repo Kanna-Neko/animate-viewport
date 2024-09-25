@@ -1,5 +1,5 @@
 {
-  "name": "viewport",
+  "name": "animate-viewport-editor",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "animate-viewport": "latest",
     "fabric": "^6.4.1",
     "next": "14.2.5",
     "react": "^18.3.1",
