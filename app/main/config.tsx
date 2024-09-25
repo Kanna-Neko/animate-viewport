@@ -71,7 +71,7 @@ export default function Config({
               item.default.height =
                 item.left.height =
                 item.right.height =
-                  newSize;
+                newSize;
             } else {
               if (state == "left") {
                 item.left.height = newSize;
@@ -102,7 +102,7 @@ export default function Config({
               item.default.rotate =
                 item.left.rotate =
                 item.right.rotate =
-                  newSize;
+                newSize;
             } else {
               if (state == "left") {
                 item.left.rotate = newSize;
@@ -145,11 +145,11 @@ export default function Config({
               updatedObject.left.width =
                 updatedObject.right.width =
                 updatedObject.default.width =
-                  newWidth;
+                newWidth;
               updatedObject.left.height =
                 updatedObject.right.height =
                 updatedObject.default.height =
-                  newHeight;
+                newHeight;
             } else {
               if (state === "left") {
                 updatedObject.left.width = newWidth;
@@ -267,8 +267,8 @@ export default function Config({
                   state == "left"
                     ? selectedObject.left.width
                     : state == "right"
-                    ? selectedObject.right.width
-                    : selectedObject.default.width
+                      ? selectedObject.right.width
+                      : selectedObject.default.width
                 }
                 onChange={handleWidthChange}
               ></input>
@@ -279,8 +279,8 @@ export default function Config({
                   state == "left"
                     ? selectedObject.left.width.toFixed(0)
                     : state == "right"
-                    ? selectedObject.right.width.toFixed(0)
-                    : selectedObject.default.width.toFixed(0)
+                      ? selectedObject.right.width.toFixed(0)
+                      : selectedObject.default.width.toFixed(0)
                 }
                 onChange={handleWidthChange}
               ></input>
@@ -298,8 +298,8 @@ export default function Config({
                   state == "left"
                     ? selectedObject.left.height
                     : state == "right"
-                    ? selectedObject.right.height
-                    : selectedObject.default.height
+                      ? selectedObject.right.height
+                      : selectedObject.default.height
                 }
                 onChange={handleHeightChange}
               ></input>
@@ -310,8 +310,8 @@ export default function Config({
                   state == "left"
                     ? selectedObject.left.height.toFixed(0)
                     : state == "right"
-                    ? selectedObject.right.height.toFixed(0)
-                    : selectedObject.default.height.toFixed(0)
+                      ? selectedObject.right.height.toFixed(0)
+                      : selectedObject.default.height.toFixed(0)
                 }
                 onChange={handleHeightChange}
               ></input>
@@ -330,8 +330,8 @@ export default function Config({
                   state == "left"
                     ? selectedObject.left.rotate
                     : state == "right"
-                    ? selectedObject.right.rotate
-                    : selectedObject.default.rotate
+                      ? selectedObject.right.rotate
+                      : selectedObject.default.rotate
                 }
                 onChange={handleRotateChange}
               ></input>
@@ -342,8 +342,8 @@ export default function Config({
                   state == "left"
                     ? selectedObject.left.rotate.toFixed(0)
                     : state == "right"
-                    ? selectedObject.right.rotate.toFixed(0)
-                    : selectedObject.default.rotate.toFixed(0)
+                      ? selectedObject.right.rotate.toFixed(0)
+                      : selectedObject.default.rotate.toFixed(0)
                 }
                 onChange={handleRotateChange}
               ></input>
@@ -374,8 +374,8 @@ export default function Config({
                   state == "left"
                     ? selectedObject.left.x
                     : state == "right"
-                    ? selectedObject.right.x
-                    : selectedObject.default.x
+                      ? selectedObject.right.x
+                      : selectedObject.default.x
                 }
                 onChange={handleXChange}
               ></input>
@@ -386,8 +386,8 @@ export default function Config({
                   state == "left"
                     ? selectedObject.left.x.toFixed(0)
                     : state == "right"
-                    ? selectedObject.right.x.toFixed(0)
-                    : selectedObject.default.x.toFixed(0)
+                      ? selectedObject.right.x.toFixed(0)
+                      : selectedObject.default.x.toFixed(0)
                 }
                 onChange={handleXChange}
               ></input>
@@ -405,8 +405,8 @@ export default function Config({
                   state == "left"
                     ? selectedObject.left.y
                     : state == "right"
-                    ? selectedObject.right.y
-                    : selectedObject.default.y
+                      ? selectedObject.right.y
+                      : selectedObject.default.y
                 }
                 onChange={handleYChange}
               ></input>
@@ -417,15 +417,15 @@ export default function Config({
                   state == "left"
                     ? selectedObject.left.y.toFixed(0)
                     : state == "right"
-                    ? selectedObject.right.y.toFixed(0)
-                    : selectedObject.default.y.toFixed(0)
+                      ? selectedObject.right.y.toFixed(0)
+                      : selectedObject.default.y.toFixed(0)
                 }
                 onChange={handleYChange}
               ></input>
             </div>
             <div className="flex gap-[20px] items-center">
               <label className="w-32 font-mono text-sm font-medium text-slate-400">
-                Keep it fixed
+                Keep it fixed?
               </label>
               <input
                 type="checkbox"
@@ -443,12 +443,17 @@ export default function Config({
                 }}
               />
             </div>
-            <button
-              className="btn btn-outline btn-square"
-              onClick={deleteSelectObject}
-            >
-              <MdDeleteForever size={34} />
-            </button>
+            <div className="flex gap-[20px] items-center">
+              <label className="w-32 font-mono text-sm font-medium text-slate-400">
+                Delete it?
+              </label>
+              <button
+                className="btn btn-square"
+                onClick={deleteSelectObject}
+              >
+                <MdDeleteForever size={34} />
+              </button>
+            </div>
           </div>
         </div>
       ) : (
