@@ -73,6 +73,7 @@ export default function Canvas({
       if (e.key === "Delete") {
         // 获取当前选中的对象列表
         var activeObjects = fabricCanvas.current?.getActiveObjects();
+        if (selectedObject) URL.revokeObjectURL(selectedObject.url);
 
         // 如果有选中的对象，则循环删除
         if (activeObjects?.length) {
@@ -108,7 +109,7 @@ export default function Canvas({
     function calculateCanvasWidth() {
       return backgroundDiv.current?.clientWidth || 1200;
     }
-  }, [fabricCanvas, setObjects]);
+  }, [fabricCanvas, selectedObject, setObjects]);
   useEffect(() => {
     if (state == "left") {
       for (let obj of objects) {
@@ -445,7 +446,6 @@ export default function Canvas({
                 fabricElement.on("removed", (e) => {
                   video.pause();
                   video.removeAttribute("src");
-                  URL.revokeObjectURL(imageUrl)
                   video.load();
                   video.remove()
                 });
