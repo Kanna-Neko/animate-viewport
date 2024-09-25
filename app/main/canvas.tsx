@@ -12,6 +12,7 @@ import * as fabric from "fabric";
 import { viewport } from "./view";
 import Preview from "./preview";
 import { gifAnimate } from "../utils/canvasGif";
+import { vendored } from "next/dist/server/future/route-modules/app-page/module.compiled";
 
 export default function Canvas({
   setReloadConfig,
@@ -440,6 +441,12 @@ export default function Canvas({
                   centeredRotation: true,
                   originX: "center",
                   originY: "center",
+                });
+                fabricElement.on("removed", (e) => {
+                  video.pause();
+                  video.removeAttribute("src");
+                  video.load();
+                  video.remove()
                 });
                 addElement(fabricElement);
                 fabric.util.requestAnimFrame(function render() {
