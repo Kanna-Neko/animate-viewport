@@ -445,6 +445,7 @@ export default function Canvas({
                 fabricElement.on("removed", (e) => {
                   video.pause();
                   video.removeAttribute("src");
+                  URL.revokeObjectURL(imageUrl)
                   video.load();
                   video.remove()
                 });
