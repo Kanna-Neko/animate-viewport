@@ -10,9 +10,7 @@ import {
 import { FabricCanvasContext, objectInfo } from "./page";
 import * as fabric from "fabric";
 import { viewport } from "./view";
-import Preview from "./preview";
 import { gifAnimate } from "../utils/canvasGif";
-import { vendored } from "next/dist/server/future/route-modules/app-page/module.compiled";
 
 export default function Canvas({
   setReloadConfig,
