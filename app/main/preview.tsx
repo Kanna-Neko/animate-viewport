@@ -5,7 +5,7 @@ import { objectInfo } from "./page";
 import { gifAnimate } from "../utils/canvasGif";
 const imposibleX = -1000;
 
-interface PreviewObjectInfo extends objectInfo {
+interface PreviewObjectInfo extends Omit<objectInfo, "fabricObject"> {
   previewObject: fabric.FabricObject;
 }
 
