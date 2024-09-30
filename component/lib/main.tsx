@@ -1,5 +1,4 @@
 import { useEffect, useRef } from "react";
-import "./main.css";
 import * as fabric from "fabric";
 import { gifAnimate } from "./gitAnimate";
 
