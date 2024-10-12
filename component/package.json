@@ -3,7 +3,7 @@
   "author": {
     "name": "Kanna-Neko"
   },
-  "version": "0.0.2",
+  "version": "0.0.3",
   "type": "module",
   "typings": "./dist/main.d.ts",
   "main": "./dist/animate-viewport.umd.cjs",
