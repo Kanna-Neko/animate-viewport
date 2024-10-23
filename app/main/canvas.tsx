@@ -107,7 +107,7 @@ export default function Canvas({
     function calculateCanvasWidth() {
       return backgroundDiv.current?.clientWidth || 1200;
     }
-  }, [fabricCanvas, selectedObject, setObjects]);
+  }, [fabricCanvas, setObjects]);
   useEffect(() => {
     if (state == "left") {
       for (let obj of objects) {
