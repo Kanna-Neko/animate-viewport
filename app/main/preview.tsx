@@ -27,12 +27,20 @@ export default function Preview({
         preview
       </div>
       <dialog className="modal backdrop-blur-xl" ref={dialogRef}>
-        <div className="modal-box w-11/12 max-w-full overflow-hidden flex items-center justify-center">
-          <AnimateViewport
-            width={viewportSize.width}
-            height={viewportSize.height}
-            objects={objects}
-          />
+        <div
+          className="modal-box w-11/12 max-w-full overflow-auto flex items-center justify-center"
+          style={{
+            minWidth: viewportSize.width,
+            minHeight: viewportSize.height,
+          }}
+        >
+          <div className="border">
+            <AnimateViewport
+              width={viewportSize.width}
+              height={viewportSize.height}
+              objects={objects}
+            />
+          </div>
         </div>
         <form method="dialog" className="modal-backdrop">
           <button

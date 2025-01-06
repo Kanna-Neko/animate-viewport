@@ -33,6 +33,11 @@ export default function AnimateViewport({
 }: AnimateViewportOption) {
   const canvasRef = useRef<null | HTMLCanvasElement>(null);
   useEffect(() => {
+    if (canvasRef.current != null) {
+      canvasRef.current.height = height;
+      canvasRef.current.width = width;
+    }
+    console.log("rebuild");
     if (!canvasRef.current) {
       throw "can't create canvas because canvas don't exist";
     }
