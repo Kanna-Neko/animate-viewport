@@ -371,6 +371,7 @@ export default function Canvas({
       hoverCursor: "default",
     });
     fabricCanvas.current?.add(viewportInterface);
+    fabricCanvas.current?.moveObjectTo(viewportInterface, 0);
     // center viewport rectangle
     setViewportInterface(viewportInterface);
     fabricCanvas.current?.viewportCenterObject(viewportInterface);
