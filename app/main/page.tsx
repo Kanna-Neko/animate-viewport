@@ -1,11 +1,19 @@
 "use client";
 
-import { createContext, MutableRefObject, useRef, useState } from "react";
+import {
+  createContext,
+  Dispatch,
+  MutableRefObject,
+  SetStateAction,
+  useRef,
+  useState,
+} from "react";
 import NextImage from "next/image";
 import * as fabric from "fabric";
 import View, { viewport } from "./view";
 import GenerateCode from "./generateCode";
 import Preview from "./preview";
+import ResizeViewport from "./resize_viewport";
 
 export const FabricCanvasContext =
   createContext<MutableRefObject<fabric.Canvas | null> | null>(null);
@@ -36,7 +44,11 @@ export default function Page() {
   });
   return (
     <div className="h-screen flex flex-col">
-      <Header objects={objects} viewportSize={viewportSize} />
+      <Header
+        objects={objects}
+        viewportSize={viewportSize}
+        setViewportSize={setViewportSize}
+      />
       <View
         objects={objects}
         setObjects={setObjects}
@@ -50,9 +62,11 @@ export default function Page() {
 function Header({
   objects,
   viewportSize,
+  setViewportSize,
 }: {
   objects: objectInfo[];
   viewportSize: viewport;
+  setViewportSize: Dispatch<SetStateAction<viewport>>;
 }) {
   return (
     <div
@@ -65,6 +79,11 @@ function Header({
         <NextImage src="/favicon.ico" alt="icon" width={30} height={30} />
         <p className="font-medium text-xl">viewport</p>
       </div>
+      <ResizeViewport
+        width={viewportSize.width}
+        height={viewportSize.height}
+        setViewportSize={setViewportSize}
+      />
       <Preview objects={objects} viewportSize={viewportSize} />
       <GenerateCode objects={objects} />
     </div>

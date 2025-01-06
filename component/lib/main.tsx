@@ -197,9 +197,6 @@ export default function AnimateViewport({
         throw "can't fetch source, the error is, " + err;
       });
     return () => {
-      for (const obj of objects) {
-        URL.revokeObjectURL(obj.url);
-      }
       canvas.dispose();
       disposeArrPromise.then((arr) => {
         for (const func of arr) {

@@ -48,7 +48,6 @@ export default function Canvas({
   const backgroundDiv = useRef<HTMLDivElement | null>(null);
   const canvasEl = useRef<HTMLCanvasElement | null>(null);
   const fabricCanvas = useContext(FabricCanvasContext);
-  const lazyObjects = useDeferredValue(objects);
 
   useEffect(() => {
     if (!canvasEl.current) {
@@ -375,9 +374,13 @@ export default function Canvas({
     // center viewport rectangle
     setViewportInterface(viewportInterface);
     fabricCanvas.current?.viewportCenterObject(viewportInterface);
+    return () => {
+      fabricCanvas.current?.remove(viewportInterface);
+    };
   }, [
     fabricCanvas,
     setViewportInterface,
+    viewportSize,
     viewportSize.height,
     viewportSize.width,
   ]);

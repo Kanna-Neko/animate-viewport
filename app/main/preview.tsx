@@ -2,8 +2,7 @@ import { useRef, useEffect, useState } from "react";
 import * as fabric from "fabric";
 import { viewport } from "./view";
 import { objectInfo } from "./page";
-import { gifAnimate } from "../utils/canvasGif";
-const imposibleX = -1000;
+import AnimateViewport from "@/component/lib/main";
 
 interface PreviewObjectInfo extends Omit<objectInfo, "fabricObject"> {
   previewObject: fabric.FabricObject;
@@ -17,199 +16,28 @@ export default function Preview({
   viewportSize: viewport;
 }) {
   const dialogRef = useRef<HTMLDialogElement | null>(null);
-  const previewCanvasEl = useRef<HTMLCanvasElement | null>(null);
-  const [previewObjects, setPreviewObjects] = useState<PreviewObjectInfo[]>([]);
-  const mouseInX = useRef<number>(imposibleX);
-  const [previewCanvas, setPreviewCanvas] = useState<fabric.Canvas | null>(
-    null
-  );
-  useEffect(() => {
-    if (!previewCanvas) return;
-    const disposeMouseOn = previewCanvas.on("mouse:move", (e) => {
-      const mouseX = e.scenePoint.x;
-      if (mouseInX.current == imposibleX) {
-        mouseInX.current = mouseX;
-        return;
-      }
-      if (mouseX < mouseInX.current) {
-        const percentage = (mouseInX.current - mouseX) / viewportSize.width;
-        for (let obj of previewObjects) {
-          obj.previewObject.set({
-            left: obj.default.x - (obj.default.x - obj.left.x) * percentage,
-            top: obj.default.y - (obj.default.y - obj.left.y) * percentage,
-            angle:
-              obj.default.rotate -
-              (obj.default.rotate - obj.left.rotate) * percentage,
-            scaleX:
-              obj.default.width / obj.previewObject.width -
-              ((obj.default.width - obj.left.width) / obj.previewObject.width) *
-                percentage,
-            scaleY:
-              obj.default.height / obj.previewObject.height -
-              ((obj.default.height - obj.left.height) /
-                obj.previewObject.height) *
-                percentage,
-          });
-          previewCanvas.renderAll();
-        }
-      } else {
-        const percentage = (mouseX - mouseInX.current) / viewportSize.width;
-        for (let obj of previewObjects) {
-          obj.previewObject.set({
-            left: obj.default.x + (obj.right.x - obj.default.x) * percentage,
-            top: obj.default.y + (obj.right.y - obj.default.y) * percentage,
-            angle:
-              obj.default.rotate +
-              (obj.right.rotate - obj.default.rotate) * percentage,
-            scaleX:
-              obj.default.width / obj.previewObject.width +
-              ((obj.right.width - obj.default.width) /
-                obj.previewObject.width) *
-                percentage,
-            scaleY:
-              obj.default.height / obj.previewObject.height +
-              ((obj.right.height - obj.default.height) /
-                obj.previewObject.height) *
-                percentage,
-          });
-          previewCanvas.renderAll();
-        }
-      }
-    });
-    const disposeMouseOut = previewCanvas.on("mouse:out", (e) => {
-      for (let obj of previewObjects) {
-        const img = obj.previewObject;
-        img.animate(
-          {
-            left: obj.default.x,
-            top: obj.default.y,
-            angle: obj.default.rotate,
-            scaleX: obj.default.width / img.width,
-            scaleY: obj.default.height / img.height,
-          },
-          {
-            duration: 200,
-            onChange: previewCanvas.renderAll.bind(previewCanvas),
-          }
-        );
-      }
-      mouseInX.current = imposibleX;
-    });
-
-    return () => {
-      disposeMouseOut();
-      disposeMouseOn();
-    };
-  }, [previewCanvas, previewObjects, viewportSize.width]);
   return (
     <>
       <div
-        className="btn ml-auto mr-4"
+        className="btn mr-4"
         onClick={() => {
           dialogRef.current?.showModal();
-          if (!previewCanvasEl.current) {
-            throw "Preview canvas element not found";
-          }
-
-          const newPreviewCanvas = new fabric.Canvas(previewCanvasEl.current);
-          setPreviewCanvas(newPreviewCanvas);
-
-          const promiseArr: Promise<PreviewObjectInfo>[] = [];
-          objects.forEach((obj) => {
-            if (obj.type == "video/mp4") {
-              promiseArr.push(
-                new Promise((resolve) => {
-                  const video = document.createElement("video", {});
-                  video.src = obj.url;
-                  video.muted = true;
-                  video.loop = true;
-                  video.onloadedmetadata = () => {
-                    video.width = video.videoWidth;
-                    video.height = video.videoHeight;
-                  };
-                  video.onloadeddata = () => {
-                    video.play().then(() => {
-                      const fabricElement = new fabric.FabricImage(video, {
-                        left: obj.default.x,
-                        top: obj.default.y,
-                        scaleX: obj.default.width / video.width,
-                        scaleY: obj.default.height / video.height,
-                        angle: obj.default.rotate,
-                        originX: "center",
-                        originY: "center",
-                        selectable: false, // 使对象不可选
-                        evented: false, // 使对象不响应任何事件
-                        hoverCursor: "default",
-                      });
-                      newPreviewCanvas.add(fabricElement);
-                      fabric.util.requestAnimFrame(function render() {
-                        fabricElement.setElement(video);
-                        newPreviewCanvas.renderAll();
-                        fabric.util.requestAnimFrame(render);
-                      });
-                      resolve({
-                        ...obj,
-                        previewObject: fabricElement,
-                      });
-                    });
-                  };
-                })
-              );
-            } else {
-              promiseArr.push(
-                new Promise((resolve) => {
-                  fabric.FabricImage.fromURL(obj.url).then((img) => {
-                    img.set({
-                      left: obj.default.x,
-                      top: obj.default.y,
-                      scaleX: obj.default.width / img.width,
-                      scaleY: obj.default.height / img.height,
-                      angle: obj.default.rotate,
-                      originX: "center",
-                      originY: "center",
-                      selectable: false, // 使对象不可选
-                      evented: false, // 使对象不响应任何事件
-                      hoverCursor: "default",
-                    });
-                    newPreviewCanvas.add(img);
-                    if (obj.type == "image/gif") {
-                      fetch(obj.url)
-                        .then((result) => result.arrayBuffer())
-                        .then((arrayBuffer) => {
-                          gifAnimate(arrayBuffer, img, newPreviewCanvas);
-                        });
-                    }
-                    newPreviewCanvas.renderAll();
-                    resolve({
-                      ...obj,
-                      previewObject: img,
-                    });
-                  });
-                })
-              );
-            }
-          });
-          Promise.all(promiseArr).then((arr) => {
-            setPreviewObjects(arr);
-          });
         }}
       >
         preview
       </div>
       <dialog className="modal backdrop-blur-xl" ref={dialogRef}>
         <div className="modal-box w-11/12 max-w-full overflow-hidden flex items-center justify-center">
-          <canvas
-            ref={previewCanvasEl}
-            height={viewportSize.height}
+          <AnimateViewport
             width={viewportSize.width}
-            className="border border-dotted "
-          ></canvas>
+            height={viewportSize.height}
+            objects={objects}
+          />
         </div>
         <form method="dialog" className="modal-backdrop">
           <button
             onClick={() => {
               dialogRef.current?.close();
-              previewCanvas?.dispose();
             }}
           >
             close
