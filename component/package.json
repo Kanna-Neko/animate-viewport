@@ -3,7 +3,7 @@
   "author": {
     "name": "Kanna-Neko"
   },
-  "version": "0.0.4",
+  "version": "0.0.10",
   "type": "module",
   "typings": "./dist/main.d.ts",
   "main": "./dist/animate-viewport.umd.cjs",
@@ -36,6 +36,8 @@
     "fabric": "^6.4.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
+  },
+  "peerDependencies": {
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",

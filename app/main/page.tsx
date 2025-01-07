@@ -85,7 +85,7 @@ function Header({
         setViewportSize={setViewportSize}
       />
       <Preview objects={objects} viewportSize={viewportSize} />
-      <GenerateCode objects={objects} />
+      <GenerateCode objects={objects} viewportSize={viewportSize} />
     </div>
   );
 }
