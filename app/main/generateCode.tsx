@@ -25,7 +25,7 @@ export default function GenerateCode({
           <h1 className="font-bold text-lg">generate code</h1>
           <form
             action={(form) => {
-              console.log(form.get("frame"));
+              const prefix = form.get("prefix");
               if (form.get("frame") == "react") {
                 const ans = `import AnimateViewport, { AnimateObjectInfo } from "animate-viewport";
 
@@ -33,7 +33,7 @@ const objects: AnimateObjectInfo[] = [
 ${objects
   .map((item) => {
     return `  {
-    url: "${item.name}",
+    url: "${prefix}/${item.name}",
     default: {
       height: ${item.default.height.toFixed(0)},
       width: ${item.default.width.toFixed(0)},
@@ -66,7 +66,7 @@ return (
                 setCode(ans);
               }
             }}
-            className="form-control gap-8"
+            className="form-control"
           >
             <div>
               <div className="label">
@@ -77,7 +77,16 @@ return (
                 <option value="react">react</option>
               </select>
             </div>
-            <button type="submit" className="btn btn-block">
+            <div className="label">
+              <span className="label-text">Prefix</span>
+            </div>
+            <input
+              type="text"
+              name="prefix"
+              placeholder="Type here"
+              className="input input-bordered w-full max-w-xs"
+            />
+            <button type="submit" className="btn btn-block mt-4">
               generate code
             </button>
           </form>
