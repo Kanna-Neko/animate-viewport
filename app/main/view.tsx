@@ -1,7 +1,8 @@
 "use client";
 import { useState, useRef, Dispatch, SetStateAction } from "react";
 import Config from "./config";
-import { FabricCanvasContext, objectInfo } from "./page";
+import { objectInfo } from "./page";
+import { FabricCanvasContext } from "./context";
 import * as fabric from "fabric";
 import Overview from "./overview";
 import Canvas from "./canvas";

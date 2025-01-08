@@ -1,7 +1,8 @@
 "use client";
 import { Dispatch, SetStateAction, useContext } from "react";
 import * as fabric from "fabric";
-import { FabricCanvasContext, objectInfo } from "./page";
+import { objectInfo } from "./page";
+import { FabricCanvasContext } from "./context";
 import pageCss from "./page.module.css";
 import { useState, useEffect } from "react";
 

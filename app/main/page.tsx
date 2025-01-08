@@ -15,9 +15,6 @@ import GenerateCode from "./generateCode";
 import Preview from "./preview";
 import ResizeViewport from "./resize_viewport";
 
-export const FabricCanvasContext =
-  createContext<MutableRefObject<fabric.Canvas | null> | null>(null);
-
 export interface objectInfo {
   name: string;
   url: string;

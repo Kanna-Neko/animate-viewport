@@ -7,7 +7,8 @@ import {
   useRef,
   useDeferredValue,
 } from "react";
-import { FabricCanvasContext, objectInfo } from "./page";
+import { objectInfo } from "./page";
+import { FabricCanvasContext } from "./context";
 import * as fabric from "fabric";
 import { viewport } from "./view";
 import { gifAnimate } from "../utils/canvasGif";
