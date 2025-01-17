@@ -16,11 +16,13 @@ export default function Preview({
   viewportSize: viewport;
 }) {
   const dialogRef = useRef<HTMLDialogElement | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
   return (
     <>
       <div
         className="btn mr-4"
         onClick={() => {
+          setIsOpen(true);
           dialogRef.current?.showModal();
         }}
       >
@@ -34,17 +36,20 @@ export default function Preview({
             minHeight: viewportSize.height,
           }}
         >
-          <div className="border">
-            <AnimateViewport
-              width={viewportSize.width}
-              height={viewportSize.height}
-              objects={objects}
-            />
-          </div>
+          {isOpen && (
+            <div className="border">
+              <AnimateViewport
+                width={viewportSize.width}
+                height={viewportSize.height}
+                objects={objects}
+              />
+            </div>
+          )}
         </div>
         <form method="dialog" className="modal-backdrop">
           <button
             onClick={() => {
+              setIsOpen(false);
               dialogRef.current?.close();
             }}
           >
