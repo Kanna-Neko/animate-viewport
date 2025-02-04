@@ -1,50 +1,22 @@
-# React + TypeScript + Vite
+# animate-viewport
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## 描述
+随鼠标移动而移动的组件编辑器，你可以在组件中添加图片，视频，gif图片等元素，鼠标移动的时候可以组件中的元素实现动画效果，例如移动，旋转，大小变化。你可以参考b站首页的banner效果。
 
-Currently, two official plugins are available:
+## 特性
+1. 支持图片，视频，svg，gif图片的添加。
+2. 动画效果支持移动，大小变化，旋转。
+3. 支持元素层级变化。
+4. 动画有三种状态，不移动时，鼠标移动到最左端和鼠标移动到最右端。
+7. 支持react
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-## Expanding the ESLint configuration
+## 如何使用
+1. 如何添加元素：直接拖动文件进入画布。
+2. 当需要添加动画时，关闭元素的keep it fixed开关，定制最左，默认，最右的状态，中间动画会自动生成。
+3. 需要改变图片层级时，右边的overview用鼠标拖动元素即可移动层级，越上方层级越低。
+4. 需要改变组件大小时，点击resize viewport即可。
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
-
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
-
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
-
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
-
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+## 安装
+1. npm install animate-viewport
+2. 开启编辑器编辑后使用右上角的生成代码即可。

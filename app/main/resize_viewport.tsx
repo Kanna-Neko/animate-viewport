@@ -14,7 +14,7 @@ export default function ResizeViewport({
   return (
     <>
       <div
-        className="btn ml-auto mr-4"
+        className="btn mr-4"
         onClick={() => {
           dialogRef.current?.showModal();
         }}

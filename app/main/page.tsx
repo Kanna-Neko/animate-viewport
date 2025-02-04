@@ -14,6 +14,7 @@ import View, { viewport } from "./view";
 import GenerateCode from "./generateCode";
 import Preview from "./preview";
 import ResizeViewport from "./resize_viewport";
+import HowToUse from "./HowToUse";
 
 export interface objectInfo {
   name: string;
@@ -76,6 +77,7 @@ function Header({
         <NextImage src="/favicon.ico" alt="icon" width={30} height={30} />
         <p className="font-medium text-xl">viewport</p>
       </div>
+      <HowToUse/>
       <ResizeViewport
         width={viewportSize.width}
         height={viewportSize.height}
